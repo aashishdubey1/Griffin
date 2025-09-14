@@ -20,12 +20,12 @@ It’s like having a senior developer review every line of code you write.
 
 ## Key Features
 
-- ** Deep Code Analysis:** Goes beyond syntax to understand the intent and context of your code.
-- ** Security Vulnerability Detection:** Identifies critical risks like SQL injection, hardcoded secrets, and insecure API usage with severity levels.
-- ** Best Practices:** Suggests improvements based on industry standards and language-specific conventions.
-- ** Refactoring Suggestions:** Offers recommendations to enhance performance, readability, and architecture.
-- ** Structured Reporting:** Returns a clear, organized JSON report categorized into Summary, Vulnerabilities, Best Practices, and Refactoring.
-- ** Instant Feedback:** Get detailed reviews in seconds, not hours.
+- **Deep Code Analysis:** Goes beyond syntax to understand the intent and context of your code.
+- **Security Vulnerability Detection:** Identifies critical risks like SQL injection, hardcoded secrets, and insecure API usage with severity levels.
+- **Best Practices:** Suggests improvements based on industry standards and language-specific conventions.
+- **Refactoring Suggestions:** Offers recommendations to enhance performance, readability, and architecture.
+- **Structured Reporting:** Returns a clear, organized JSON report categorized into Summary, Vulnerabilities, Best Practices, and Refactoring.
+- **Instant Feedback:** Get detailed reviews in seconds, not hours.
 
 ## How It Works
 
@@ -43,3 +43,4 @@ Griffin is built as a robust monolithic backend API using Bun and Express.js, de
 ```
 
 ```
+

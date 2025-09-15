@@ -1,4 +1,4 @@
-import { User, type IUser } from "../models/User.model";
+import { User, type IUser } from "../models/UserModel";
 import type {
   RegisterInput,
   UpdateProfileInput,

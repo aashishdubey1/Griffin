@@ -10,7 +10,7 @@ import type {
   ForgotPasswordInput,
   ResetPasswordInput,
 } from "../validator/auth.validator";
-import { type IUser } from "../models/User.model";
+import { type IUser } from "../models/UserModel";
 
 interface JWTPayload {
   userId: string;

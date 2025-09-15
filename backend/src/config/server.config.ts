@@ -7,4 +7,7 @@ export default {
   BUN_ENV: process.env.BUN_ENV,
   REDIS_PORT: process.env.REDIS_PORT,
   REDIS_HOST: process.env.REDIS_HOST,
+  DB_URL: process.env.DB_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
 };

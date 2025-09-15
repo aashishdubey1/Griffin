@@ -11,9 +11,13 @@ import { StatusCodes } from "http-status-codes";
 
 import serverConfig from "./config/server.config";
 import logger from "./config/logger.config";
-import { redis } from "bun";
+import { connect, redis } from "bun";
+import { apiRoutes } from "./routes";
+import { connectToDb } from "./config/db.config";
 
 const app: Express = express();
+
+await connectToDb();
 
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
@@ -25,7 +29,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ success: true, message: "OK" });
 });
 
-// app.use("/api", apiRoutes);
+app.use("/api", apiRoutes);
 
 app.listen(serverConfig.PORT, async () => {
   logger.info(`server is running on port ${serverConfig.PORT}`);

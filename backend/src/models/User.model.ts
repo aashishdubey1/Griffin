@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 
 interface IUserProfile {
@@ -12,7 +12,7 @@ interface IUserUsageStats {
   lastReviewAt?: Date;
 }
 
-export interface IUser {
+export interface IUser extends Document {
   username: string;
   email: string;
   password?: string;
@@ -21,9 +21,6 @@ export interface IUser {
   isActive: boolean;
   reviewLimit: number;
   usageStats?: IUserUsageStats;
-}
-
-interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -103,8 +100,8 @@ const userSchema = new Schema<IUser>(
 );
 
 // Indexes remain the same
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// userSchema.index({ email: 1 });
+// userSchema.index({ username: 1 });
 userSchema.index({ "usageStats.lastReviewAt": -1 });
 
 userSchema.pre("save", async function (next) {

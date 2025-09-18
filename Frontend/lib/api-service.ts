@@ -29,13 +29,20 @@ export interface FileUploadResponse {
 }
 
 export interface JobStatus {
-  id: string;
+  jobId: string;
   status: "pending" | "processing" | "completed" | "failed";
-  progress?: number;
   result?: any;
   error?: string;
+  processingTime?: number;
+  completedAt?: string;
   createdAt: string;
-  updatedAt: string;
+}
+
+export interface JobStatusResponse {
+  success: boolean;
+  data?: JobStatus;
+  error?: string;
+  jobId?: string;
 }
 
 export interface ReviewSubmissionData {
@@ -202,12 +209,12 @@ class ApiService {
   }
 
   // Job status tracking methods
-  async getJobStatus(jobId: string): Promise<JobStatus> {
-    return this.makeRequest<JobStatus>(`/review/jobs/${jobId}/status`);
+  async getJobStatus(jobId: string): Promise<JobStatusResponse> {
+    return this.makeRequest<JobStatusResponse>(`/review/jobs/${jobId}/status`);
   }
 
-  async getJobStatusImmediate(jobId: string): Promise<JobStatus> {
-    return this.makeRequest<JobStatus>(
+  async getJobStatusImmediate(jobId: string): Promise<JobStatusResponse> {
+    return this.makeRequest<JobStatusResponse>(
       `/review/jobs/${jobId}/status/immediate`
     );
   }

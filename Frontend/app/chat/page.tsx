@@ -9,7 +9,6 @@ import { useTheme } from "@/lib/theme-context"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { DragDropZone } from "@/components/file-upload/drag-drop-zone"
 import { JobTracker } from "@/components/job-status/job-tracker"
 import { ReviewResults } from "@/components/code-review/review-results"
 import { useJobTracker } from "@/hooks/use-job-tracker"
@@ -64,8 +63,8 @@ const BotIcon = ({ className }: { className?: string }) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-    />
+      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
   </svg>
 )
 
@@ -97,13 +96,13 @@ export default function ChatPage() {
     error: jobError,
   } = useJobTracker(currentJobId, {
     onComplete: (result) => {
-      console.log(" Job completed with result:", result)
+      console.log("[v0] Job completed with result:", result)
 
-      // Add completion message with results to chat
+      // Enhanced completion handling with better response display
       const completionMessage: Message = {
         id: (Date.now() + 2).toString(),
         type: "assistant",
-        content: `Analysis complete! Here are your detailed results:`,
+        content: result?.message || "Analysis complete! Here are your detailed results:",
         timestamp: new Date(),
         reviewResult: result,
       }
@@ -111,16 +110,17 @@ export default function ChatPage() {
       setCurrentJobId(null)
     },
     onError: (error) => {
-      console.error(" Job failed:", error)
+      console.error("[v0] Job failed:", error)
 
-      // Add error message to chat
+      // Better error message formatting
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         type: "assistant",
-        content: `Analysis failed: ${error}`,
+        content: `Analysis failed: ${typeof error === "string" ? error : "An unexpected error occurred"}`,
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
+      setCurrentJobId(null)
     },
   })
 
@@ -176,7 +176,7 @@ export default function ChatPage() {
           type: "assistant",
           content: result.jobId
             ? `I've received your file "${file.name}" and started analyzing it. You can track the progress below.`
-            : `I've received your file "${file.name}" and the analysis is complete!`,
+            : "I've received your file and the analysis is complete!",
           timestamp: new Date(),
           jobId: result.jobId,
         }
@@ -270,6 +270,61 @@ export default function ChatPage() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
+    // Check if the input is asking for job status
+    const jobStatusPattern = /job[s]?\s*(status|result|response)/i
+    const jobIdPattern = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+
+    const isJobStatusQuery = jobStatusPattern.test(input.trim())
+    const jobIdMatch = input.trim().match(jobIdPattern)
+
+    if (isJobStatusQuery && jobIdMatch) {
+      const jobId = jobIdMatch[1]
+
+      // Add user message
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        type: "user",
+        content: input.trim(),
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, userMessage])
+      setInput("")
+      setIsLoading(true)
+
+      try {
+        // Fetch job status directly
+        const statusResult = await apiService.getJobStatus(jobId)
+
+        if (statusResult.success && statusResult.data) {
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: "assistant",
+            content:
+              statusResult.data.status === "completed"
+                ? "Here are the results for your job:"
+                : `Job Status: ${statusResult.data.status || "unknown"}`,
+            timestamp: new Date(),
+            reviewResult: statusResult.data.status === "completed" ? statusResult.data.result : null,
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+        } else {
+          throw new Error(statusResult.error || "Failed to fetch job status")
+        }
+      } catch (error) {
+        console.error("[v0] Job status fetch error:", error)
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "assistant",
+          content: `Sorry, I couldn't fetch the status for job ${jobId}. ${error instanceof Error ? error.message : "Please try again."}`,
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      } finally {
+        setIsLoading(false)
+      }
+      return
+    }
+
     // Check if input looks like code (contains common code patterns)
     const codePatterns = [
       /function\s+\w+\s*\(/,
@@ -327,6 +382,19 @@ export default function ChatPage() {
     )
   }
 
+  const handleFileButtonClick = () => {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = supportedFileTypes.join(",")
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        handleFileUpload(file)
+      }
+    }
+    input.click()
+  }
+
   if (authLoading) {
     return (
       <div
@@ -342,10 +410,7 @@ export default function ChatPage() {
   }
 
   return (
-    <DragDropZone
-      onFileUpload={handleFileUpload}
-      supportedFileTypes={supportedFileTypes}
-      isUploading={isUploading}
+    <div
       className={`h-screen relative ${
         isDarkMode ? "bg-[#1a1a1a]" : "bg-[#F7F5F3]"
       } overflow-x-hidden transition-colors duration-500`}
@@ -494,12 +559,21 @@ export default function ChatPage() {
                     } shadow-sm transition-all duration-200`}
                   >
                     <div className="flex items-end gap-3 p-4">
-                      <DragDropZone
-                        onFileUpload={handleFileUpload}
-                        supportedFileTypes={supportedFileTypes}
-                        isUploading={isUploading}
-                        className="relative"
-                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleFileButtonClick}
+                        disabled={isUploading}
+                        className={`h-8 w-8 p-0 flex-shrink-0 ${
+                          isDarkMode
+                            ? "hover:bg-[rgba(255,255,255,0.1)] text-[rgba(229,229,229,0.70)]"
+                            : "hover:bg-[rgba(55,50,47,0.1)] text-[#605A57]"
+                        } transition-colors duration-200`}
+                        title="Upload file"
+                      >
+                        {isUploading ? <LoaderIcon className="w-4 h-4" /> : <PlusIcon className="w-4 h-4" />}
+                      </Button>
 
                       <div className="flex-1 min-h-[24px] max-h-32">
                         <textarea
@@ -542,6 +616,6 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
-    </DragDropZone>
+    </div>
   )
 }

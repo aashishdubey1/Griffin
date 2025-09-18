@@ -192,23 +192,17 @@ export const requireActiveUser = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+    if (req.user) {
+      // Get user details to check active status
+      const user = await authService.getUserProfile(req.user.userId);
+
+      if (!user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Account is deactivated. Please contact support.",
+        });
+      }
     }
-
-    // Get user details to check active status
-    const user = await authService.getUserProfile(req.user.userId);
-
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "Account is deactivated. Please contact support.",
-      });
-    }
-
     next();
   } catch (error) {
     return res.status(500).json({

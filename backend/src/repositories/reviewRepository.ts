@@ -1,5 +1,6 @@
 import { ReviewJob, type IReviewJob } from "../models/ReviewModel";
 import { Types } from "mongoose";
+import type { CodeReviewResult } from "../services/aiService";
 
 export interface CreateReviewJobData {
   jobId: string;
@@ -27,6 +28,22 @@ export interface JobQueryOptions {
 }
 
 export class ReviewRepository {
+  async getJobStatus(jobId: string): Promise<IReviewJob | null> {
+    const job = await ReviewJob.findOne(
+      { jobId },
+      {
+        status: 1,
+        result: 1,
+        error: 1,
+        processingTime: 1,
+        completedAt: 1,
+        createdAt: 1,
+      }
+    ).lean();
+
+    return job;
+  }
+
   async createJob(jobData: CreateReviewJobData): Promise<IReviewJob> {
     const reviewJob = new ReviewJob(jobData);
     return await reviewJob.save();
@@ -76,7 +93,7 @@ export class ReviewRepository {
 
   async updateJobResult(
     jobId: string,
-    result: IReviewJob["result"],
+    result: CodeReviewResult,
     processingTime?: number
   ): Promise<IReviewJob | null> {
     return await ReviewJob.findOneAndUpdate(

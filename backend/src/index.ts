@@ -11,10 +11,12 @@ import { StatusCodes } from "http-status-codes";
 
 import serverConfig from "./config/server.config";
 import logger from "./config/logger.config";
-import { connect, redis } from "bun";
 import { apiRoutes } from "./routes";
 import { connectToDb } from "./config/db.config";
 import mongoose from "mongoose";
+import redis from "./config/redis.config";
+import { addCodeReviewJob } from "./producers/codeReviewJobProducers";
+import { worker } from "./workers/codeReviewerWorker";
 
 const app: Express = express();
 
@@ -22,7 +24,7 @@ await connectToDb();
 
 app.set("trust proxy", true);
 
-app.use(express.json({ limit: "4mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors());
 app.use(morgan("dev"));
@@ -34,18 +36,31 @@ app.get("/health", (req: Request, res: Response) => {
 
 app.use("/api", apiRoutes);
 
-app.use("*", (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-  });
-});
+// app.use("*", (req: Request, res: Response) => {
+//   res.status(404).json({
+//     success: false,
+//     message: "Route not found",
+//   });
+// });
 
 app.listen(serverConfig.PORT, async () => {
   logger.info(`server is running on port ${serverConfig.PORT}`);
-  await redis.connect();
-});
 
+  // await addCodeReviewJob(
+  //   {
+  //     jobId: "test-job-1",
+  //     code: "console.log('Hello, world!');",
+  //     language: "javascript",
+  //     fileSize: 100,
+  //     filename: "hello.js",
+  //     priority: 5,
+  //     userId: "user-123",
+  //   },
+  //   5
+  // );
+
+  // worker("code-review");
+});
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
   await mongoose.connection.close();

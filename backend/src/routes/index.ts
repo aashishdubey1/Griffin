@@ -1,17 +1,11 @@
-import express, {
-  Router,
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import { Router } from "express";
 import { authRoutes } from "./authRoutes";
+import { reviewRoutes } from "./reviewRoutes";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
 
-router.use("/submit", (req: Request, res: Response, next: NextFunction) => {
-  console.log("Submit routes called");
-});
+router.use("/review", reviewRoutes);
 
 export { router as apiRoutes };

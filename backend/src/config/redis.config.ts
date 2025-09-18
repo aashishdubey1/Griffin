@@ -16,7 +16,7 @@ const redis = new Redis({
 });
 
 redis.on("ready", () => {
-  logger.info("Redis is ready to connect");
+  logger.info("Redis is ready to use");
 });
 
 redis.on("connect", () => {

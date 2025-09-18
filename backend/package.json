@@ -12,12 +12,14 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
     "@types/winston": "^2.4.4"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/morgan": "^1.9.10",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.58.5",
@@ -31,7 +33,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "redis": "^5.8.2",
+    "uuid": "^13.0.0",
     "winston": "^3.17.0",
     "zod": "^4.1.8"
   }

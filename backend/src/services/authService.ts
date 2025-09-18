@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { AuthRepository } from "../repositories/auth.repository";
+import { AuthRepository } from "../repositories/authRepository";
 import type {
   RegisterInput,
   LoginInput,

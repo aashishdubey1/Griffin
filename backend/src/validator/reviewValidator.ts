@@ -34,7 +34,7 @@ export const reviewSubmissionSchema = z.object({
       if (!filename) return true;
       // Basic filename validation
       const validExtensions =
-        /\.(js|ts|py|java|cs|cpp|c|go|rs|php|rb|kt|swift|dart|html|css|sql|sh|yml|yaml|json|xml)$/i;
+        /\.(txt|js|ts|py|java|cs|cpp|c|go|rs|php|rb|kt|swift|dart|html|css|sql|sh|yml|yaml|json|xml)$/i;
       return validExtensions.test(filename) || filename.length > 0;
     }, "Invalid filename or extension"),
 

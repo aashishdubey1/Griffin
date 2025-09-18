@@ -1,46 +1,72 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { SUPPORTED_LANGUAGES } from "../utils/constants";
+
+// Best practice: Centralize enum definitions in one place
+export enum JobStatus {
+  Pending = "pending",
+  Processing = "processing",
+  Completed = "completed",
+  Failed = "failed",
+}
+
+export enum Severity {
+  Info = "info",
+  Warning = "warning",
+  Error = "error",
+}
+
+export enum Impact {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+}
+
+export enum VulnerabilitySeverity {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+  Critical = "critical",
+}
 
 export interface IReviewJob extends Document {
   jobId: string;
-  userId?: Types.ObjectId; // Optional for guest users
-  guestId?: string; // IP address for guest tracking
+  userId?: Types.ObjectId;
+  guestId?: string;
   code: string;
   filename?: string;
   language?: string;
-  fileSize: number; // in bytes
-  status: "pending" | "processing" | "completed" | "failed";
-  priority: number; // 1-10, higher is more priority
+  fileSize: number;
+  status: JobStatus;
+  priority: number;
   result?: {
     summary?: string;
     bestPractices?: Array<{
       category: string;
       message: string;
-      severity: "info" | "warning" | "error";
+      severity: Severity;
       lineNumber?: number;
     }>;
     refactoring?: Array<{
       suggestion: string;
-      impact: "low" | "medium" | "high";
+      impact: Impact;
       lineNumber?: number;
       originalCode?: string;
       suggestedCode?: string;
     }>;
     vulnerabilities?: Array<{
       type: string;
-      severity: "low" | "medium" | "high" | "critical";
+      severity: VulnerabilitySeverity;
       description: string;
       lineNumber?: number;
-      cwe?: string; // Common Weakness Enumeration
+      cwe?: string;
     }>;
     performance?: Array<{
       issue: string;
-      impact: "low" | "medium" | "high";
+      impact: Impact;
       suggestion: string;
       lineNumber?: number;
     }>;
     maintainability?: {
-      score: number; // 0-100
+      score: number;
       issues: Array<{
         type: string;
         description: string;
@@ -53,7 +79,7 @@ export interface IReviewJob extends Document {
       suggestions: string[];
     };
     documentation?: {
-      coverageScore: number; // 0-100
+      coverageScore: number;
       suggestions: string[];
     };
     testing?: {
@@ -62,10 +88,76 @@ export interface IReviewJob extends Document {
     };
   };
   error?: string;
-  processingTime?: number; // in milliseconds
+  processingTime?: number;
   completedAt?: Date;
+  createdAt?: Date;
 }
 
+// Sub-schemas for arrays of objects
+const bestPracticeSchema = new Schema(
+  {
+    category: String,
+    message: String,
+    severity: {
+      type: String,
+      enum: Object.values(Severity),
+    },
+    lineNumber: Number,
+  },
+  { _id: false }
+);
+
+const refactoringSchema = new Schema(
+  {
+    suggestion: String,
+    impact: {
+      type: String,
+      enum: Object.values(Impact),
+    },
+    lineNumber: Number,
+    originalCode: String,
+    suggestedCode: String,
+  },
+  { _id: false }
+);
+
+const vulnerabilitySchema = new Schema(
+  {
+    type: String,
+    severity: {
+      type: String,
+      enum: Object.values(VulnerabilitySeverity),
+    },
+    description: String,
+    lineNumber: Number,
+    cwe: String,
+  },
+  { _id: false }
+);
+
+const performanceSchema = new Schema(
+  {
+    issue: String,
+    impact: {
+      type: String,
+      enum: Object.values(Impact),
+    },
+    suggestion: String,
+    lineNumber: Number,
+  },
+  { _id: false }
+);
+
+const issueSchema = new Schema(
+  {
+    type: String,
+    description: String,
+    lineNumber: Number,
+  },
+  { _id: false }
+);
+
+// Main Schema
 const reviewJobSchema = new Schema<IReviewJob>(
   {
     jobId: {
@@ -77,7 +169,7 @@ const reviewJobSchema = new Schema<IReviewJob>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      sparse: true, // Allows null values with index
+      sparse: true,
     },
     guestId: {
       type: String,
@@ -93,7 +185,8 @@ const reviewJobSchema = new Schema<IReviewJob>(
     },
     language: {
       type: String,
-      enum: SUPPORTED_LANGUAGES,
+      // Assuming SUPPORTED_LANGUAGES is defined elsewhere
+      // If it's a static list, you could use an enum here as well
     },
     fileSize: {
       type: Number,
@@ -102,8 +195,8 @@ const reviewJobSchema = new Schema<IReviewJob>(
     },
     status: {
       type: String,
-      enum: ["pending", "processing", "completed", "failed"],
-      default: "pending",
+      enum: Object.values(JobStatus),
+      default: JobStatus.Pending,
       index: true,
     },
     priority: {
@@ -114,65 +207,17 @@ const reviewJobSchema = new Schema<IReviewJob>(
     },
     result: {
       summary: String,
-      bestPractices: [
-        {
-          category: String,
-          message: String,
-          severity: {
-            type: String,
-            enum: ["info", "warning", "error"],
-          },
-          lineNumber: Number,
-        },
-      ],
-      refactoring: [
-        {
-          suggestion: String,
-          impact: {
-            type: String,
-            enum: ["low", "medium", "high"],
-          },
-          lineNumber: Number,
-          originalCode: String,
-          suggestedCode: String,
-        },
-      ],
-      vulnerabilities: [
-        {
-          type: String,
-          severity: {
-            type: String,
-            enum: ["low", "medium", "high", "critical"],
-          },
-          description: String,
-          lineNumber: Number,
-          cwe: String,
-        },
-      ],
-      performance: [
-        {
-          issue: String,
-          impact: {
-            type: String,
-            enum: ["low", "medium", "high"],
-          },
-          suggestion: String,
-          lineNumber: Number,
-        },
-      ],
+      bestPractices: [bestPracticeSchema],
+      refactoring: [refactoringSchema],
+      vulnerabilities: [vulnerabilitySchema],
+      performance: [performanceSchema],
       maintainability: {
         score: {
           type: Number,
           min: 0,
           max: 100,
         },
-        issues: [
-          {
-            type: String,
-            description: String,
-            lineNumber: Number,
-          },
-        ],
+        issues: [issueSchema],
       },
       complexity: {
         cyclomaticComplexity: Number,
@@ -201,7 +246,7 @@ const reviewJobSchema = new Schema<IReviewJob>(
   }
 );
 
-// Indexes for performance    
+// Indexes for performance
 reviewJobSchema.index({ userId: 1, createdAt: -1 });
 reviewJobSchema.index({ guestId: 1, createdAt: -1 });
 reviewJobSchema.index({ status: 1, priority: -1, createdAt: 1 });

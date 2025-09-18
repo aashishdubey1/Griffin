@@ -2,17 +2,14 @@ import Redis from "ioredis";
 import serverConfig from "./server.config";
 import logger from "./logger.config";
 
-console.log(
-  "Connecting to Redis:",
-  serverConfig.REDIS_HOST,
-  serverConfig.REDIS_PORT
-);
-
 const redis = new Redis({
-  port: Number(serverConfig.REDIS_PORT!),
-  host: serverConfig.REDIS_HOST,
+  port: Number(serverConfig.REDIS_PORT!), // 19538
+  host: serverConfig.REDIS_HOST, // redis-19538.c305.ap-south-1-1.ec2.redns.redis-cloud.com
+  username: "default",
+  password: serverConfig.REDIS_PASSWORD!, // your Redis Cloud password
   lazyConnect: true,
   maxRetriesPerRequest: null,
+  tls: {}, // 👈 Required for Redis Cloud (it enforces TLS/SSL)
 });
 
 redis.on("ready", () => {

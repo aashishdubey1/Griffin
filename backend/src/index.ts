@@ -14,8 +14,7 @@ import logger from "./config/logger.config";
 import { apiRoutes } from "./routes";
 import { connectToDb } from "./config/db.config";
 import mongoose from "mongoose";
-import redis from "./config/redis.config";
-import { addCodeReviewJob } from "./producers/codeReviewJobProducers";
+import serverAdapter from "./config/bullMq.config";
 import { worker } from "./workers/codeReviewerWorker";
 
 const app: Express = express();
@@ -34,32 +33,13 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ success: true, message: "OK" });
 });
 
+app.use("/ui/queues", serverAdapter.getRouter());
 app.use("/api", apiRoutes);
-
-// app.use("*", (req: Request, res: Response) => {
-//   res.status(404).json({
-//     success: false,
-//     message: "Route not found",
-//   });
-// });
 
 app.listen(serverConfig.PORT, async () => {
   logger.info(`server is running on port ${serverConfig.PORT}`);
 
-  // await addCodeReviewJob(
-  //   {
-  //     jobId: "test-job-1",
-  //     code: "console.log('Hello, world!');",
-  //     language: "javascript",
-  //     fileSize: 100,
-  //     filename: "hello.js",
-  //     priority: 5,
-  //     userId: "user-123",
-  //   },
-  //   5
-  // );
-
-  // worker("code-review");
+  worker("code-review");
 });
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");

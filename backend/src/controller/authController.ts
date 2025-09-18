@@ -51,212 +51,212 @@ export class AuthController {
     }
   };
 
-  // Get User Profile
-  getProfile = async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
+  // // Get User Profile
+  // getProfile = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     if (!req.user) {
+  //       res.status(401).json({
+  //         success: false,
+  //         message: "Authentication required",
+  //       });
+  //       return;
+  //     }
 
-      const user = await this.authService.getUserProfile(req.user.userId);
+  //     const user = await this.authService.getUserProfile(req.user.userId);
 
-      res.status(200).json({
-        success: true,
-        message: "Profile retrieved successfully",
-        data: { user },
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Profile retrieved successfully",
+  //       data: { user },
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Update User Profile
-  updateProfile = async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
+  // // Update User Profile
+  // updateProfile = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     if (!req.user) {
+  //       res.status(401).json({
+  //         success: false,
+  //         message: "Authentication required",
+  //       });
+  //       return;
+  //     }
 
-      const validatedData = updateProfileSchema.parse(req.body);
+  //     const validatedData = updateProfileSchema.parse(req.body);
 
-      const updatedUser = await this.authService.updateProfile(
-        req.user.userId,
-        validatedData
-      );
+  //     const updatedUser = await this.authService.updateProfile(
+  //       req.user.userId,
+  //       validatedData
+  //     );
 
-      res.status(200).json({
-        success: true,
-        message: "Profile updated successfully",
-        data: { user: updatedUser },
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Profile updated successfully",
+  //       data: { user: updatedUser },
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Change Password
-  changePassword = async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
+  // // Change Password
+  // changePassword = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     if (!req.user) {
+  //       res.status(401).json({
+  //         success: false,
+  //         message: "Authentication required",
+  //       });
+  //       return;
+  //     }
 
-      const validatedData = changePasswordSchema.parse(req.body);
+  //     const validatedData = changePasswordSchema.parse(req.body);
 
-      await this.authService.changePassword(req.user.userId, validatedData);
+  //     await this.authService.changePassword(req.user.userId, validatedData);
 
-      res.status(200).json({
-        success: true,
-        message: "Password changed successfully",
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Password changed successfully",
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Verify Email
-  verifyEmail = async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
+  // // Verify Email
+  // verifyEmail = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     if (!req.user) {
+  //       res.status(401).json({
+  //         success: false,
+  //         message: "Authentication required",
+  //       });
+  //       return;
+  //     }
 
-      await this.authService.verifyEmail(req.user.userId);
+  //     await this.authService.verifyEmail(req.user.userId);
 
-      res.status(200).json({
-        success: true,
-        message: "Email verified successfully",
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Email verified successfully",
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Forgot Password
-  forgotPassword = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const validatedData = forgotPasswordSchema.parse(req.body);
+  // // Forgot Password
+  // forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const validatedData = forgotPasswordSchema.parse(req.body);
 
-      const resetToken = await this.authService.forgotPassword(validatedData);
+  //     const resetToken = await this.authService.forgotPassword(validatedData);
 
-      // In production, send this token via email instead of returning it
-      res.status(200).json({
-        success: true,
-        message: "Password reset token generated successfully",
-        resetToken, // Remove this in production
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     // In production, send this token via email instead of returning it
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Password reset token generated successfully",
+  //       resetToken, // Remove this in production
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Reset Password
-  resetPassword = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const validatedData = resetPasswordSchema.parse(req.body);
+  // // Reset Password
+  // resetPassword = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const validatedData = resetPasswordSchema.parse(req.body);
 
-      await this.authService.resetPassword(validatedData);
+  //     await this.authService.resetPassword(validatedData);
 
-      res.status(200).json({
-        success: true,
-        message: "Password reset successfully",
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Password reset successfully",
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Check Review Permission (for both authenticated and guest users)
-  checkReviewPermission = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
+  // // Check Review Permission (for both authenticated and guest users)
+  // checkReviewPermission = async (
+  //   req: Request,
+  //   res: Response
+  // ): Promise<void> => {
+  //   try {
+  //     const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
 
-      if (req.user) {
-        // Authenticated user
-        const { canReview, reviewsLeft } = await this.authService.canUserReview(
-          req.user.userId
-        );
+  //     if (req.user) {
+  //       // Authenticated user
+  //       const { canReview, reviewsLeft } = await this.authService.canUserReview(
+  //         req.user.userId
+  //       );
 
-        res.status(200).json({
-          success: true,
-          data: {
-            canReview,
-            reviewsLeft,
-            userType: "authenticated",
-            userId: req.user.userId,
-          },
-        });
-      } else {
-        // Guest user
-        const { canReview, reviewsLeft } =
-          this.authService.canGuestReview(ipAddress);
+  //       res.status(200).json({
+  //         success: true,
+  //         data: {
+  //           canReview,
+  //           reviewsLeft,
+  //           userType: "authenticated",
+  //           userId: req.user.userId,
+  //         },
+  //       });
+  //     } else {
+  //       // Guest user
+  //       const { canReview, reviewsLeft } =
+  //         this.authService.canGuestReview(ipAddress);
 
-        res.status(200).json({
-          success: true,
-          data: {
-            canReview,
-            reviewsLeft,
-            userType: "guest",
-            requiresLogin: !canReview,
-          },
-        });
-      }
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //       res.status(200).json({
+  //         success: true,
+  //         data: {
+  //           canReview,
+  //           reviewsLeft,
+  //           userType: "guest",
+  //           requiresLogin: !canReview,
+  //         },
+  //       });
+  //     }
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
-  // Get user stats (for authenticated users)
-  getUserStats = async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
+  // // Get user stats (for authenticated users)
+  // getUserStats = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     if (!req.user) {
+  //       res.status(401).json({
+  //         success: false,
+  //         message: "Authentication required",
+  //       });
+  //       return;
+  //     }
 
-      const user = await this.authService.getUserProfile(req.user.userId);
-      const { canReview, reviewsLeft } = await this.authService.canUserReview(
-        req.user.userId
-      );
+  //     const user = await this.authService.getUserProfile(req.user.userId);
+  //     const { canReview, reviewsLeft } = await this.authService.canUserReview(
+  //       req.user.userId
+  //     );
 
-      res.status(200).json({
-        success: true,
-        data: {
-          username: user.username,
-          email: user.email,
-          isVerified: user.isVerified,
-          reviewLimit: user.reviewLimit,
-          usageStats: user.usageStats,
-          canReview,
-          reviewsLeft,
-        },
-      });
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       data: {
+  //         username: user.username,
+  //         email: user.email,
+  //         isVerified: user.isVerified,
+  //         reviewLimit: user.reviewLimit,
+  //         usageStats: user.usageStats,
+  //         canReview,
+  //         reviewsLeft,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     this.handleError(res, error);
+  //   }
+  // };
 
   // Logout (client-side token removal, but we can track this)
   logout = async (req: Request, res: Response): Promise<void> => {

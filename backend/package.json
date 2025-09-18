@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "build": "bunx tsc"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -19,6 +20,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@bull-board/api": "^6.12.7",
+    "@bull-board/express": "^6.12.7",
     "@google/generative-ai": "^0.24.1",
     "@types/morgan": "^1.9.10",
     "bcrypt": "^6.0.0",

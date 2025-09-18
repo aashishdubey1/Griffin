@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for existing session on mount
     const savedUser = localStorage.getItem("griffin-user");
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem("authToken");
     if (savedUser && token) {
       try {
         const parsedUser = JSON.parse(savedUser);
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         apiService.setToken(token);
       } catch (error) {
         localStorage.removeItem("griffin-user");
-        localStorage.removeItem("auth_token");
+        localStorage.removeItem("authToken");
       }
     }
     setIsLoading(false);
@@ -66,9 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.success) {
         const newUser: User = {
           id: response.data.user!.id,
-          username: response.data.user!.email.split("@")[0], // Extract username from email
+          username: response.data.user!.username || response.data.user!.email.split("@")[0], // Use username from backend or extract from email
           email: response.data.user!.email,
-          name: response.data.user!.name,
+          name: response.data.user!.name || response.data.user!.profile?.name,
         };
         setUser(newUser);
         localStorage.setItem("griffin-user", JSON.stringify(newUser));
@@ -110,9 +110,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.success) {
         const newUser: User = {
           id: response.data.user.id,
-          username: response.data.user.email.split("@")[0],
+          username: response.data.user.username || response.data.user.email.split("@")[0],
           email: response.data.user.email,
-          name: response.data.user.name,
+          name: response.data.user.name || response.data.user.profile?.name,
         };
         setUser(newUser);
         localStorage.setItem("griffin-user", JSON.stringify(newUser));
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(mockUser);
       localStorage.setItem("griffin-user", JSON.stringify(mockUser));
-      localStorage.setItem("auth_token", "demo-token");
+      localStorage.setItem("authToken", "demo-token");
       apiService.setToken("demo-token");
       return true;
     } finally {
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       localStorage.removeItem("griffin-user");
-      localStorage.removeItem("auth_token");
+      localStorage.removeItem("authToken");
     }
   };
 

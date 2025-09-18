@@ -86,13 +86,18 @@ class ApiService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`
 
-    const headers: HeadersInit = {
+    const headers = new Headers({
       "Content-Type": "application/json",
-      ...options.headers,
+    })
+
+    if (options.headers) {
+      Object.entries(options.headers).forEach(([key, value]) => {
+        headers.append(key, value as string)
+      })
     }
 
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`
+      headers.append("Authorization", `Bearer ${this.token}`)
     }
 
     const response = await fetch(url, {

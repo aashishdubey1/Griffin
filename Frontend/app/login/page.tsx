@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth-context"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("") // Change from username to email
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -18,12 +18,12 @@ export default function LoginPage() {
   const { login } = useAuth()
 
   const validateForm = useCallback(() => {
-    if (!username.trim()) {
-      setError("Username is required")
+    if (!email.trim()) {
+      setError("Email is required")
       return false
     }
-    if (username.length < 3) {
-      setError("Username must be at least 3 characters long")
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address")
       return false
     }
     if (!password.trim()) {
@@ -35,7 +35,7 @@ export default function LoginPage() {
       return false
     }
     return true
-  }, [username, password])
+  }, [email, password])
 
   const handleSubmit = useCallback(
     async (e: FormEvent<HTMLFormElement>) => {

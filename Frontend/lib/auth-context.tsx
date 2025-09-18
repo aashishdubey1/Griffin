@@ -1,19 +1,22 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { apiService, type AuthResponse, type LoginCredentials, type RegisterData } from "./api-service"
 
 interface User {
   id: string
   username: string
   email?: string
+  name?: string
 }
 
 interface AuthContextType {
   user: User | null
-  login: (username: string, password: string) => Promise<boolean>
-  register: (username: string, email: string, password: string) => Promise<boolean>
-  logout: () => void
+  login: (email: string, password: string) => Promise<boolean>
+  register: (email: string, password: string, name?: string) => Promise<boolean>
+  logout: () => Promise<void>
   isLoading: boolean
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,122 +28,125 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for existing session on mount
     const savedUser = localStorage.getItem("griffin-user")
-    const token = localStorage.getItem("griffin-token")
+    const token = localStorage.getItem("auth_token")
     if (savedUser && token) {
       try {
-        setUser(JSON.parse(savedUser))
+        const parsedUser = JSON.parse(savedUser)
+        setUser(parsedUser)
+        apiService.setToken(token)
       } catch (error) {
         localStorage.removeItem("griffin-user")
-        localStorage.removeItem("griffin-token")
+        localStorage.removeItem("auth_token")
       }
     }
     setIsLoading(false)
   }, [])
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log("Attempting login with API endpoint")
-      const response = await fetch("http://localhost:4000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      })
+      setIsLoading(true)
+      const credentials: LoginCredentials = { email, password }
+      const response: AuthResponse = await apiService.login(credentials)
 
-      console.log("Login response status:", response.status)
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log("Login successful, user data:", data)
+      if (response.success && response.user) {
         const newUser: User = {
-          id: data.user.id || data.user._id,
-          username: data.user.username,
-          email: data.user.email,
+          id: response.user.id,
+          username: response.user.email.split("@")[0], // Extract username from email
+          email: response.user.email,
+          name: response.user.name,
         }
         setUser(newUser)
         localStorage.setItem("griffin-user", JSON.stringify(newUser))
-        if (data.token) {
-          localStorage.setItem("griffin-token", data.token)
-        }
         return true
       }
 
-      const errorData = await response.text()
-      console.log("Login failed with response:", errorData)
       return false
     } catch (error) {
-      console.log("Login error - API server may not be running:", error)
-      if (username === "test" && password === "test") {
+      console.error("Login error:", error)
+      if (email === "demo@griffin.dev" && password === "demo") {
         const mockUser: User = {
-          id: "test-user-id",
-          username: "test",
-          email: "test@example.com",
+          id: "demo-user-id",
+          username: "demo",
+          email: "demo@griffin.dev",
+          name: "Demo User",
         }
         setUser(mockUser)
         localStorage.setItem("griffin-user", JSON.stringify(mockUser))
-        localStorage.setItem("griffin-token", "mock-token")
-        console.log("Using mock authentication for testing")
+        localStorage.setItem("auth_token", "demo-token")
+        apiService.setToken("demo-token")
         return true
       }
       return false
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const register = async (username: string, email: string, password: string): Promise<boolean> => {
+  const register = async (email: string, password: string, name?: string): Promise<boolean> => {
     try {
-      console.log("Attempting registration with API endpoint")
-      const response = await fetch("http://localhost:4000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, email, password }),
-      })
+      setIsLoading(true)
+      const registerData: RegisterData = { email, password, name }
+      const response: AuthResponse = await apiService.register(registerData)
 
-      console.log("Registration response status:", response.status)
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log("Registration successful, user data:", data)
+      if (response.success && response.user) {
         const newUser: User = {
-          id: data.user.id || data.user._id,
-          username: data.user.username,
-          email: data.user.email,
+          id: response.user.id,
+          username: response.user.email.split("@")[0],
+          email: response.user.email,
+          name: response.user.name,
         }
         setUser(newUser)
         localStorage.setItem("griffin-user", JSON.stringify(newUser))
-        if (data.token) {
-          localStorage.setItem("griffin-token", data.token)
-        }
         return true
       }
 
-      const errorData = await response.text()
-      console.log("Registration failed with response:", errorData)
       return false
     } catch (error) {
-      console.log("Registration error - API server may not be running:", error)
+      console.error("Registration error:", error)
       const mockUser: User = {
-        id: `test-user-${Date.now()}`,
-        username,
+        id: `demo-user-${Date.now()}`,
+        username: email.split("@")[0],
         email,
+        name,
       }
       setUser(mockUser)
       localStorage.setItem("griffin-user", JSON.stringify(mockUser))
-      localStorage.setItem("griffin-token", "mock-token")
-      console.log("Using mock registration for testing")
+      localStorage.setItem("auth_token", "demo-token")
+      apiService.setToken("demo-token")
       return true
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("griffin-user")
-    localStorage.removeItem("griffin-token")
+  const logout = async (): Promise<void> => {
+    try {
+      await apiService.logout()
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setUser(null)
+      localStorage.removeItem("griffin-user")
+      localStorage.removeItem("auth_token")
+    }
   }
 
-  return <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>{children}</AuthContext.Provider>
+  const isAuthenticated = !!user && apiService.isAuthenticated()
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        isLoading,
+        isAuthenticated,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

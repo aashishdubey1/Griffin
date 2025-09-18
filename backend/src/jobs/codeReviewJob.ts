@@ -55,20 +55,22 @@ export class CodeReviewJob implements IJob {
 
       // Step 2: Run AI analysis
       console.log(`Running AI analysis for job ${jobData.jobId}`);
-      // const aiData = await aiService.analyzeCode(
-      //   jobData.code,
-      //   jobData.language!,
-      //   jobData.filename,
-      //   semgrepFindings
-      // );
+
+      const aiData = await aiService.analyzeCode(
+        jobData.code,
+        jobData.language!,
+        jobData.filename,
+        semgrepFindings
+      );
 
       // Step 3: Save results
       const processingTime = Date.now() - startTime;
-      // await reviewRepository.updateJobResult(
-      //   jobData.jobId,
-      //   aiData,
-      //   processingTime
-      // );
+
+      await reviewRepository.updateJobResult(
+        jobData.jobId,
+        aiData,
+        processingTime
+      );
 
       console.log(
         `CodeReviewJob ${jobData.jobId} completed successfully in ${processingTime}ms`

@@ -2,6 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Instrument_Serif } from "next/font/google"
 import "./globals.css"
+import { AuthProvider } from "@/lib/auth-context"
+import { ChatProvider } from "@/lib/chat-context"
+import { ThemeProvider } from "@/lib/theme-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,7 +24,8 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Griffin - Intelligent Code Review Assistant",
   description:
-    "Get deeply contextual, actionable feedback on every line of code you write. Griffin leverages AI and static analysis to deliver comprehensive code intelligence."
+    "Get deeply contextual, actionable feedback on every line of code you write. Griffin leverages AI and static analysis to deliver comprehensive code intelligence.",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -40,7 +44,13 @@ export default function RootLayout({
         />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400&display=swap" />
       </head>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <ThemeProvider>
+          <AuthProvider>
+            <ChatProvider>{children}</ChatProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

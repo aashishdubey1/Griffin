@@ -1,41 +1,58 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useCallback, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/auth-context"
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const { login } = useAuth()
 
   const validateForm = useCallback(() => {
-    if (!username.trim()) {
+    if (!formData.username.trim()) {
       setError("Username is required")
       return false
     }
-    if (username.length < 3) {
+    if (formData.username.length < 3) {
       setError("Username must be at least 3 characters long")
       return false
     }
-    if (!password.trim()) {
+    if (!formData.email.trim()) {
+      setError("Email is required")
+      return false
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address")
+      return false
+    }
+    if (!formData.password.trim()) {
       setError("Password is required")
       return false
     }
-    if (password.length < 8) {
+    if (formData.password.length < 8) {
       setError("Password must be at least 8 characters long")
       return false
     }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return false
+    }
     return true
-  }, [username, password])
+  }, [formData])
 
   const handleSubmit = useCallback(
     async (e: FormEvent<HTMLFormElement>) => {
@@ -49,31 +66,38 @@ export default function LoginPage() {
       setIsLoading(true)
 
       try {
-        const success = await login(username, password)
+        // TODO: Implement actual registration logic
+        await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
+        console.log("Registration submitted:", {
+          username: formData.username,
+          email: formData.email,
+          password: "***",
+        })
 
-        if (success) {
-          router.push("/chat")
-        } else {
-          setError("Invalid username or password. Please try again.")
-        }
+        router.push("/login")
       } catch (err) {
         setError("An error occurred. Please try again.")
       } finally {
         setIsLoading(false)
       }
     },
-    [username, password, validateForm, router, login],
+    [formData, validateForm, router],
   )
 
-  const handleSocialLogin = useCallback(
+  const handleSocialSignUp = useCallback(
     (provider: string) => {
-      console.log(`Social login with ${provider}`)
+      console.log(`Social sign up with ${provider}`)
+      // TODO: Implement actual social authentication
       setTimeout(() => {
-        router.push("/chat")
+        router.push("/")
       }, 1000)
     },
     [router],
   )
+
+  const handleInputChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 animate-in fade-in duration-700">
@@ -91,9 +115,9 @@ export default function LoginPage() {
             </div>
 
             <div className="max-w-md mt-8 lg:mt-0">
-              <p className="text-black/70 text-sm mb-4">You can easily</p>
+              <p className="text-black/70 text-sm mb-4">Join thousands of developers</p>
               <h1 className="text-black text-2xl lg:text-4xl font-bold leading-tight">
-                Get access to intelligent code review and analysis.
+                Start your journey with intelligent code review and analysis.
               </h1>
             </div>
           </div>
@@ -106,9 +130,9 @@ export default function LoginPage() {
                     ✱
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Welcome to Griffin</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Create Your Account</h2>
                 <p className="text-gray-600 text-sm">
-                  Access your intelligent code review assistant and enhance your development workflow.
+                  Join Griffin and unlock powerful code analysis tools to enhance your development workflow.
                 </p>
               </div>
 
@@ -119,14 +143,14 @@ export default function LoginPage() {
                   className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 py-3 px-4 rounded-md font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 mb-4"
                   onClick={() => router.push("/chat")}
                 >
-                  🚀 Try Griffin Now - No Account Required
+                  🚀 Try Griffin First - No Registration Required
                 </Button>
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or sign in to your account</span>
+                    <span className="px-2 bg-white text-gray-500">or create your account</span>
                   </div>
                 </div>
               </div>
@@ -149,15 +173,33 @@ export default function LoginPage() {
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Choose a username"
+                    value={formData.username}
+                    onChange={handleInputChange("username")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                     required
                     minLength={3}
                     aria-describedby={error ? "form-error" : undefined}
                     disabled={isLoading}
                     autoComplete="username"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleInputChange("email")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    required
+                    aria-describedby={error ? "form-error" : undefined}
+                    disabled={isLoading}
+                    autoComplete="email"
                   />
                 </div>
 
@@ -169,15 +211,15 @@ export default function LoginPage() {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Create a password"
+                      value={formData.password}
+                      onChange={handleInputChange("password")}
                       className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                       required
                       minLength={8}
                       aria-describedby={error ? "form-error" : undefined}
                       disabled={isLoading}
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -188,6 +230,41 @@ export default function LoginPage() {
                       tabIndex={0}
                     >
                       {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange("confirmPassword")}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                      required
+                      minLength={8}
+                      aria-describedby={error ? "form-error" : undefined}
+                      disabled={isLoading}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded"
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      disabled={isLoading}
+                      tabIndex={0}
+                    >
+                      {showConfirmPassword ? (
                         <EyeOff className="h-4 w-4 text-gray-400" />
                       ) : (
                         <Eye className="h-4 w-4 text-gray-400" />
@@ -208,21 +285,30 @@ export default function LoginPage() {
                         className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
                         aria-hidden="true"
                       ></div>
-                      Signing in...
+                      Creating Account...
                     </div>
                   ) : (
-                    "Sign In"
+                    "Create Account"
                   )}
                 </Button>
               </form>
 
               <div className="space-y-4 animate-in fade-in duration-700 delay-400">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or continue with</span>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-3 gap-3">
                   <Button
                     type="button"
                     variant="outline"
                     className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 bg-transparent disabled:opacity-50 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    onClick={() => handleSocialLogin("Google")}
+                    onClick={() => handleSocialSignUp("Google")}
                     disabled={isLoading}
                     aria-label="Continue with Google"
                   >
@@ -249,7 +335,7 @@ export default function LoginPage() {
                     type="button"
                     variant="outline"
                     className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 bg-transparent disabled:opacity-50 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    onClick={() => handleSocialLogin("GitHub")}
+                    onClick={() => handleSocialSignUp("GitHub")}
                     disabled={isLoading}
                     aria-label="Continue with GitHub"
                   >
@@ -261,7 +347,7 @@ export default function LoginPage() {
                     type="button"
                     variant="outline"
                     className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 bg-transparent disabled:opacity-50 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    onClick={() => handleSocialLogin("Apple")}
+                    onClick={() => handleSocialSignUp("Apple")}
                     disabled={isLoading}
                     aria-label="Continue with Apple"
                   >
@@ -274,12 +360,12 @@ export default function LoginPage() {
 
               <div className="text-center animate-in fade-in duration-700 delay-500">
                 <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <Link
-                    href="/signup"
+                    href="/login"
                     className="text-orange-500 hover:text-orange-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded"
                   >
-                    Sign up
+                    Sign in
                   </Link>
                 </p>
               </div>

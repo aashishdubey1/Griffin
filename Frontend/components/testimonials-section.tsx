@@ -2,20 +2,11 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import type React from "react"
+import { useTheme } from "@/lib/theme-context"
 
 // Badge component for consistency
 function Badge({ icon, text }: { icon: React.ReactNode; text: string }) {
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem("theme")
-      setIsDarkMode(savedTheme === "dark")
-    } catch (error) {
-      console.error("Failed to access localStorage:", error)
-      setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches)
-    }
-  }, [])
+  const { isDarkMode } = useTheme()
 
   return (
     <div
@@ -36,21 +27,11 @@ function Badge({ icon, text }: { icon: React.ReactNode; text: string }) {
 export default function TestimonialsSection() {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode } = useTheme()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const mountedRef = useRef(true)
-
-  useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem("theme")
-      setIsDarkMode(savedTheme === "dark")
-    } catch (error) {
-      console.error("Failed to access localStorage:", error)
-      setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches)
-    }
-  }, [])
 
   const testimonials = useMemo(
     () => [
@@ -161,12 +142,12 @@ export default function TestimonialsSection() {
             text="Testimonials"
           />
           <div
-            className={`w-full max-w-[472.55px] text-center flex justify-center flex-col ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold leading-tight md:leading-[60px] font-sans tracking-tight transition-colors duration-500`}
+            className={`w-full max-w-[472.55px] text-center flex justify-center flex-col ${isDarkMode ? "text-[#f5f5f5]" : "text-[#37322F]"} text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold leading-tight md:leading-[60px] font-sans tracking-tight transition-colors duration-500`}
           >
             Trusted by developers worldwide
           </div>
           <div
-            className={`self-stretch text-center ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} text-sm sm:text-base font-normal leading-6 sm:leading-7 font-sans transition-colors duration-500`}
+            className={`self-stretch text-center ${isDarkMode ? "text-[#e0e0e0]" : "text-[#4a4540]"} text-sm sm:text-base font-normal leading-6 sm:leading-7 font-sans transition-colors duration-500`}
           >
             See how Griffin is transforming code review processes
             <br className="hidden sm:block" />
@@ -182,11 +163,11 @@ export default function TestimonialsSection() {
         <div className="w-full max-w-4xl flex flex-col items-center gap-8">
           {/* Testimonial Card */}
           <div
-            className={`w-full max-w-2xl p-6 sm:p-8 ${isDarkMode ? "bg-[#2a2a2a]" : "bg-white"} rounded-lg ${isDarkMode ? "shadow-[0px_4px_20px_rgba(255,255,255,0.1)]" : "shadow-[0px_4px_20px_rgba(0,0,0,0.08)]"} transition-all duration-500 ${isTransitioning ? "opacity-50 scale-95" : "opacity-100 scale-100"}`}
+            className={`w-full max-w-2xl p-6 sm:p-8 ${isDarkMode ? "bg-[#2a2a2a]" : "bg-white"} rounded-lg ${isDarkMode ? "shadow-[0px_4px_20px_rgba(0,0,0,0.3)]" : "shadow-[0px_4px_20px_rgba(0,0,0,0.12)]"} transition-all duration-500 ${isTransitioning ? "opacity-50 scale-95" : "opacity-100 scale-100"}`}
           >
             <div className="flex flex-col items-center text-center gap-6">
               <div
-                className={`text-lg sm:text-xl ${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} font-medium leading-relaxed transition-colors duration-500`}
+                className={`text-lg sm:text-xl ${isDarkMode ? "text-[#f5f5f5]" : "text-[#37322F]"} font-medium leading-relaxed transition-colors duration-500`}
               >
                 "{testimonials[activeTestimonial].quote}"
               </div>
@@ -199,12 +180,12 @@ export default function TestimonialsSection() {
                 />
                 <div className="text-left">
                   <div
-                    className={`font-semibold ${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} transition-colors duration-500`}
+                    className={`font-semibold ${isDarkMode ? "text-[#f5f5f5]" : "text-[#37322F]"} transition-colors duration-500`}
                   >
                     {testimonials[activeTestimonial].name}
                   </div>
                   <div
-                    className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}
+                    className={`text-sm ${isDarkMode ? "text-[#e0e0e0]" : "text-[#4a4540]"} transition-colors duration-500`}
                   >
                     {testimonials[activeTestimonial].company}
                   </div>

@@ -9,12 +9,19 @@ import { useTheme } from "@/lib/theme-context"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { DragDropZone } from "@/components/file-upload/drag-drop-zone"
+import { JobTracker } from "@/components/job-status/job-tracker"
+import { ReviewResults } from "@/components/code-review/review-results"
+import { useJobTracker } from "@/hooks/use-job-tracker"
+import apiService, { type ReviewSubmissionData } from "@/lib/api-service"
 
 interface Message {
   id: string
   type: "user" | "assistant"
   content: string
   timestamp: Date
+  jobId?: string
+  reviewResult?: any
 }
 
 const SendIcon = ({ className }: { className?: string }) => (
@@ -35,7 +42,7 @@ const UploadIcon = ({ className }: { className?: string }) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+      d="M7 16a4 4 0 11-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 001 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
     />
   </svg>
 )
@@ -80,8 +87,42 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isDragOver, setIsDragOver] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+
+  const {
+    jobStatus,
+    isCompleted,
+    isFailed,
+    error: jobError,
+  } = useJobTracker(currentJobId, {
+    onComplete: (result) => {
+      console.log(" Job completed with result:", result)
+
+      // Add completion message with results to chat
+      const completionMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        type: "assistant",
+        content: `Analysis complete! Here are your detailed results:`,
+        timestamp: new Date(),
+        reviewResult: result,
+      }
+      setMessages((prev) => [...prev, completionMessage])
+      setCurrentJobId(null)
+    },
+    onError: (error) => {
+      console.error(" Job failed:", error)
+
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        type: "assistant",
+        content: `Analysis failed: ${error}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    },
+  })
 
   const supportedFileTypes = [
     ".txt",
@@ -115,30 +156,13 @@ export default function ChatPage() {
     }
   }, [user, authLoading, router])
 
-  const isValidFileType = (fileName: string) => {
-    return supportedFileTypes.some((type) => fileName.toLowerCase().endsWith(type))
-  }
-
   const handleFileUpload = async (file: File) => {
-    if (!isValidFileType(file.name)) {
-      alert(`Unsupported file type. Please upload files with these extensions: ${supportedFileTypes.join(", ")}`)
-      return
-    }
-
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append("file", file)
+      const result = await apiService.uploadFile(file)
 
-      const response = await fetch("http://localhost:4000/api/review/submit-file", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-
+      if (result.success) {
         const userMessage: Message = {
           id: Date.now().toString(),
           type: "user",
@@ -150,55 +174,126 @@ export default function ChatPage() {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: "assistant",
-          content:
-            result.message ||
-            `I've received your file "${file.name}" and will analyze it for security vulnerabilities, best practices, and optimization opportunities. The analysis is complete!`,
+          content: result.jobId
+            ? `I've received your file "${file.name}" and started analyzing it. You can track the progress below.`
+            : `I've received your file "${file.name}" and the analysis is complete!`,
           timestamp: new Date(),
+          jobId: result.jobId,
         }
         setMessages((prev) => [...prev, assistantMessage])
+
+        if (result.jobId) {
+          setCurrentJobId(result.jobId)
+          console.log(`[v0] Started tracking job: ${result.jobId}`)
+        }
       } else {
-        throw new Error("Upload failed")
+        throw new Error(result.message || "Upload failed")
       }
     } catch (error) {
       console.error("File upload error:", error)
-      alert("Failed to upload file. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload file. Please try again."
+
+      const errorAssistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: `Sorry, I encountered an error while uploading your file: ${errorMessage}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorAssistantMessage])
     } finally {
       setIsUploading(false)
     }
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
+  const handleCodeSubmission = async (code: string) => {
+    if (!code.trim()) return
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-
-    const files = Array.from(e.dataTransfer.files)
-    if (files.length > 0) {
-      handleFileUpload(files[0])
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: "user",
+      content: `Submitted code for review:\n\`\`\`\n${code.substring(0, 200)}${code.length > 200 ? "..." : ""}\n\`\`\``,
+      timestamp: new Date(),
     }
-  }
+    setMessages((prev) => [...prev, userMessage])
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      handleFileUpload(files[0])
+    try {
+      const submissionData: ReviewSubmissionData = {
+        code: code.trim(),
+      }
+
+      const result = await apiService.submitReview(submissionData)
+
+      if (result.success) {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "assistant",
+          content: result.jobId
+            ? "I've received your code and started analyzing it. You can track the progress below."
+            : "I've received your code and the analysis is complete!",
+          timestamp: new Date(),
+          jobId: result.jobId,
+        }
+        setMessages((prev) => [...prev, assistantMessage])
+
+        if (result.jobId) {
+          setCurrentJobId(result.jobId)
+          console.log(`[v0] Started tracking code review job: ${result.jobId}`)
+        } else if (result.result) {
+          // Handle immediate results
+          const resultMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            type: "assistant",
+            content: "Here are your code review results:",
+            timestamp: new Date(),
+            reviewResult: result.result,
+          }
+          setMessages((prev) => [...prev, resultMessage])
+        }
+      } else {
+        throw new Error(result.message || "Submission failed")
+      }
+    } catch (error) {
+      console.error("Code submission error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit code. Please try again."
+
+      const errorAssistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: `Sorry, I encountered an error while analyzing your code: ${errorMessage}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorAssistantMessage])
     }
-    e.target.value = ""
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
+    // Check if input looks like code (contains common code patterns)
+    const codePatterns = [
+      /function\s+\w+\s*\(/,
+      /class\s+\w+/,
+      /import\s+.+from/,
+      /def\s+\w+\s*\(/,
+      /public\s+class/,
+      /const\s+\w+\s*=/,
+      /let\s+\w+\s*=/,
+      /var\s+\w+\s*=/,
+      /{[\s\S]*}/,
+      /\w+\s*$$[^)]*$$\s*{/,
+    ]
+
+    const looksLikeCode = codePatterns.some((pattern) => pattern.test(input.trim())) && input.trim().length > 50
+
+    if (looksLikeCode) {
+      // Handle as code submission
+      await handleCodeSubmission(input.trim())
+      setInput("")
+      return
+    }
+
+    // Handle as regular chat message
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
@@ -213,9 +308,9 @@ export default function ChatPage() {
     setTimeout(
       () => {
         const responses = [
-          "I'm Griffin, your AI code review assistant. I can help you analyze code for security vulnerabilities, best practices, and optimization opportunities. Upload a file in the right panel for detailed analysis!",
+          "I'm Griffin, your AI code review assistant. I can help you analyze code for security vulnerabilities, best practices, and optimization opportunities. Upload a file or paste code directly in the chat!",
           "Great question! For code review, I recommend focusing on security patterns, performance optimizations, and maintainability. Would you like me to analyze a specific code file?",
-          "I can help you with code analysis, security audits, best practices, and refactoring suggestions. Upload your code file to the right panel and I'll provide detailed feedback.",
+          "I can help you with code analysis, security audits, best practices, and refactoring suggestions. Upload your code file or paste code directly for detailed feedback.",
           "As your code review assistant, I specialize in identifying security vulnerabilities, suggesting performance improvements, and ensuring your code follows best practices. Ready to analyze some code?",
         ]
 
@@ -247,30 +342,14 @@ export default function ChatPage() {
   }
 
   return (
-    <div
+    <DragDropZone
+      onFileUpload={handleFileUpload}
+      supportedFileTypes={supportedFileTypes}
+      isUploading={isUploading}
       className={`h-screen relative ${
         isDarkMode ? "bg-[#1a1a1a]" : "bg-[#F7F5F3]"
       } overflow-x-hidden transition-colors duration-500`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
     >
-      {isDragOver && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div
-            className={`p-8 rounded-lg border-2 border-dashed border-orange-500 ${isDarkMode ? "bg-[#2a2a2a]" : "bg-white"} text-center`}
-          >
-            <UploadIcon className="w-12 h-12 mx-auto mb-4 text-orange-500" />
-            <p className={`text-lg font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"}`}>
-              Drop your code file here
-            </p>
-            <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} mt-2`}>
-              Supports: {supportedFileTypes.slice(0, 5).join(", ")} and more
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="relative z-20 h-[84px]">
         <Navigation />
       </div>
@@ -309,12 +388,27 @@ export default function ChatPage() {
                         isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"
                       } max-w-md text-lg transition-colors duration-500`}
                     >
-                      Upload your code or ask me anything about code review, security, and best practices.
+                      Upload your code, paste it directly, or ask me anything about code review, security, and best
+                      practices.
                     </p>
                   </div>
                 )}
 
                 <div className="space-y-6 py-8">
+                  {currentJobId && (
+                    <div className="px-4">
+                      <JobTracker
+                        jobId={currentJobId}
+                        onComplete={(result) => {
+                          console.log("[v0] Job tracker completed:", result)
+                        }}
+                        onError={(error) => {
+                          console.error("[v0] Job tracker error:", error)
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {messages.map((message) => (
                     <div key={message.id} className="group">
                       <div className="flex gap-4 px-4 py-6">
@@ -341,6 +435,11 @@ export default function ChatPage() {
                             >
                               {message.content}
                             </div>
+                            {message.reviewResult && (
+                              <div className="mt-4">
+                                <ReviewResults result={message.reviewResult} />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -395,39 +494,18 @@ export default function ChatPage() {
                     } shadow-sm transition-all duration-200`}
                   >
                     <div className="flex items-end gap-3 p-4">
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="file-upload"
-                          className="hidden"
-                          accept={supportedFileTypes.join(",")}
-                          onChange={handleFileInputChange}
-                          disabled={isUploading}
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className={`h-8 w-8 p-0 ${
-                            isDarkMode
-                              ? "text-[rgba(229,229,229,0.70)] hover:text-[#e5e5e5] hover:bg-[rgba(255,255,255,0.08)]"
-                              : "text-[#605A57] hover:text-[#49423D] hover:bg-[#F7F5F3]"
-                          } rounded-lg flex-shrink-0 transition-colors duration-500 ${
-                            isUploading ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                          onClick={() => document.getElementById("file-upload")?.click()}
-                          disabled={isUploading}
-                          title="Upload code file for review"
-                        >
-                          {isUploading ? <LoaderIcon className="w-5 h-5" /> : <UploadIcon className="w-5 h-5" />}
-                        </Button>
-                      </div>
+                      <DragDropZone
+                        onFileUpload={handleFileUpload}
+                        supportedFileTypes={supportedFileTypes}
+                        isUploading={isUploading}
+                        className="relative"
+                      />
 
                       <div className="flex-1 min-h-[24px] max-h-32">
                         <textarea
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
-                          placeholder="Ask Griffin anything about your code..."
+                          placeholder="Ask Griffin anything about your code, or paste code directly for analysis..."
                           className={`w-full bg-transparent ${
                             isDarkMode
                               ? "text-[#e5e5e5] placeholder-[rgba(229,229,229,0.70)]"
@@ -463,12 +541,7 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
-
-        {/* Right Panel - Griffin Interface 
-        <div className="w-[480px] flex-shrink-0">
-          <GriffinInterface />
-        </div>*/}
       </div>
-    </div>
+    </DragDropZone>
   )
 }

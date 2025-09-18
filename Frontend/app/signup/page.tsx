@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -21,6 +22,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const { register} = useAuth()
 
   const validateForm = useCallback(() => {
     if (!formData.username.trim()) {
@@ -66,28 +68,24 @@ export default function SignUpPage() {
       setIsLoading(true)
 
       try {
-        // TODO: Implement actual registration logic
-        await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
-        console.log("Registration submitted:", {
-          username: formData.username,
-          email: formData.email,
-          password: "***",
-        })
-
-        router.push("/login")
+        const success = await register(formData.username, formData.email, formData.password)
+        if (success) {
+          router.push("/chat")
+        } else {
+          setError("Registration failed. Please check your details and try again.")
+        }
       } catch (err) {
         setError("An error occurred. Please try again.")
       } finally {
         setIsLoading(false)
       }
     },
-    [formData, validateForm, router],
+    [formData, validateForm, router, register],
   )
 
   const handleSocialSignUp = useCallback(
     (provider: string) => {
       console.log(`Social sign up with ${provider}`)
-      // TODO: Implement actual social authentication
       setTimeout(() => {
         router.push("/")
       }, 1000)

@@ -103,7 +103,9 @@ export default function DocumentationSection() {
       <div
         className={`self-stretch px-4 sm:px-6 md:px-24 py-8 sm:py-12 md:py-16 ${isDarkMode ? "border-b border-[rgba(255,255,255,0.12)]" : "border-b border-[rgba(55,50,47,0.12)]"} flex justify-center items-center gap-6 transition-colors duration-500`}
       >
-        <div className="w-full max-w-[586px] px-4 sm:px-6 py-4 sm:py-5 shadow-[0px_2px_4px_rgba(50,45,43,0.06)] overflow-hidden rounded-lg flex flex-col justify-start items-center gap-3 sm:gap-4 shadow-none">
+        <div
+          className={`w-full max-w-[586px] px-4 sm:px-6 py-4 sm:py-5 ${isDarkMode ? "shadow-[0px_2px_4px_rgba(255,255,255,0.08)]" : "shadow-[0px_2px_4px_rgba(50,45,43,0.06)]"} overflow-hidden rounded-lg flex flex-col justify-start items-center gap-3 sm:gap-4 transition-all duration-500`}
+        >
           <Badge
             icon={
               <div

@@ -9,6 +9,8 @@ import { useTheme } from "@/lib/theme-context"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { GriffinInterface } from "@/components/griffin-interface"
+ 
 
 interface Message {
   id: string

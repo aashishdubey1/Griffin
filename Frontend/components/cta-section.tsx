@@ -33,15 +33,9 @@ export default function CTASection() {
             <div
               className={`self-stretch text-center flex justify-center flex-col ${isDarkMode ? "text-[#f5f5f5]" : "text-[#49423D]"} text-3xl md:text-5xl font-semibold leading-tight md:leading-[56px] font-sans tracking-tight transition-colors duration-500`}
             >
-              Ready to transform your business?
+              Stop shipping bugs. Start shipping confidence.
             </div>
-            <div
-              className={`self-stretch text-center ${isDarkMode ? "text-[#e0e0e0]" : "text-[#605A57]"} text-base leading-7 font-sans font-medium transition-colors duration-500`}
-            >
-              Join thousands of businesses streamlining their operations,
-              <br />
-              managing schedules, and growing with data-driven insights.
-            </div>
+            
           </div>
           <div className="w-full max-w-[497px] flex flex-col justify-center items-center gap-12">
             <div className="flex justify-start items-center gap-4">

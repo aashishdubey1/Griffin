@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { JobTracker } from "@/components/job-status/job-tracker"
 import { ReviewResults } from "@/components/code-review/review-results"
+import { CodeMessage } from "@/components/chat/code-message"
+import { DebugPanel } from "@/components/chat/debug-panel"
 import { useJobTracker } from "@/hooks/use-job-tracker"
 import apiService, { type ReviewSubmissionData } from "@/lib/api-service"
 
@@ -21,6 +23,14 @@ interface Message {
   timestamp: Date
   jobId?: string
   reviewResult?: any
+}
+
+interface DebugLog {
+  id: string
+  timestamp: Date
+  type: 'info' | 'error' | 'success' | 'warning'
+  message: string
+  data?: any
 }
 
 const SendIcon = ({ className }: { className?: string }) => (
@@ -88,6 +98,18 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
+
+  const addDebugLog = (type: DebugLog['type'], message: string, data?: any) => {
+    const log: DebugLog = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      type,
+      message,
+      data
+    }
+    setDebugLogs(prev => [...prev, log].slice(-50)) // Keep only last 50 logs
+  }
 
   const {
     jobStatus,
@@ -222,6 +244,8 @@ export default function ChatPage() {
       }
 
       const result = await apiService.submitReview(submissionData)
+      console.log("Code submission result:", result)
+      addDebugLog('info', 'Code submission completed', result)
 
       if (result.success) {
         const assistantMessage: Message = {
@@ -254,6 +278,7 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error("Code submission error:", error)
+      addDebugLog('error', 'Code submission failed', error)
       const errorMessage = error instanceof Error ? error.message : "Failed to submit code. Please try again."
 
       const errorAssistantMessage: Message = {
@@ -466,10 +491,21 @@ export default function ChatPage() {
                         jobId={currentJobId}
                         onComplete={(result) => {
                           console.log("[v0] Job tracker completed:", result)
+                          addDebugLog('success', 'Job completed successfully', result)
                         }}
                         onError={(error) => {
                           console.error("[v0] Job tracker error:", error)
+                          addDebugLog('error', 'Job failed', error)
                         }}
+                      />
+                    </div>
+                  )}
+
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="px-4">
+                      <DebugPanel
+                        logs={debugLogs}
+                        onClearLogs={() => setDebugLogs([])}
                       />
                     </div>
                   )}
@@ -493,13 +529,7 @@ export default function ChatPage() {
                             {message.type === "user" ? user?.username || "You" : "Griffin"}
                           </div>
                           <div className="prose prose-sm max-w-none">
-                            <div
-                              className={`whitespace-pre-wrap ${
-                                isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"
-                              } leading-relaxed transition-colors duration-500`}
-                            >
-                              {message.content}
-                            </div>
+                            <CodeMessage content={message.content} />
                             {message.reviewResult && (
                               <div className="mt-4">
                                 <ReviewResults result={message.reviewResult} />

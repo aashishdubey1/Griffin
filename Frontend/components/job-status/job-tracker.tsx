@@ -56,17 +56,23 @@ export function JobTracker({ jobId, onComplete, onError }: JobTrackerProps) {
 
   const fetchJobStatus = useCallback(async () => {
     try {
-      const status = await apiService.getJobStatus(jobId)
-      setJobStatus(status)
+      const response = await apiService.getJobStatus(jobId)
+      console.log("JobTracker - Job status response:", response)
+      
+      if (response.success && response.data) {
+        setJobStatus(response.data)
 
-      if (status.status === "completed") {
-        setIsPolling(false)
-        onComplete?.(status.result)
-      } else if (status.status === "failed") {
-        setIsPolling(false)
-        const errorMsg = status.error || "Job failed"
-        setError(errorMsg)
-        onError?.(errorMsg)
+        if (response.data.status === "completed") {
+          setIsPolling(false)
+          onComplete?.(response.data.result)
+        } else if (response.data.status === "failed") {
+          setIsPolling(false)
+          const errorMsg = response.data.error || "Job failed"
+          setError(errorMsg)
+          onError?.(errorMsg)
+        }
+      } else {
+        throw new Error(response.error || "Failed to fetch job status")
       }
     } catch (err) {
       console.error("Error fetching job status:", err)
@@ -79,17 +85,23 @@ export function JobTracker({ jobId, onComplete, onError }: JobTrackerProps) {
 
   const fetchImmediateStatus = useCallback(async () => {
     try {
-      const status = await apiService.getJobStatusImmediate(jobId)
-      setJobStatus(status)
+      const response = await apiService.getJobStatusImmediate(jobId)
+      console.log("JobTracker - Immediate job status response:", response)
+      
+      if (response.success && response.data) {
+        setJobStatus(response.data)
 
-      if (status.status === "completed") {
-        setIsPolling(false)
-        onComplete?.(status.result)
-      } else if (status.status === "failed") {
-        setIsPolling(false)
-        const errorMsg = status.error || "Job failed"
-        setError(errorMsg)
-        onError?.(errorMsg)
+        if (response.data.status === "completed") {
+          setIsPolling(false)
+          onComplete?.(response.data.result)
+        } else if (response.data.status === "failed") {
+          setIsPolling(false)
+          const errorMsg = response.data.error || "Job failed"
+          setError(errorMsg)
+          onError?.(errorMsg)
+        }
+      } else {
+        throw new Error(response.error || "Failed to fetch immediate job status")
       }
     } catch (err) {
       console.error("Error fetching immediate job status:", err)

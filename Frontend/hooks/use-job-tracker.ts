@@ -23,22 +23,27 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
 
     setIsLoading(true)
     try {
+      console.log(`[useJobTracker] Fetching status for job: ${jobId}`)
       const response = await apiService.getJobStatus(jobId)
+      console.log(`[useJobTracker] Job status response:`, response)
       
       if (response.success && response.data) {
         setJobStatus(response.data)
         setError(null)
 
         if (response.data.status === "completed") {
+          console.log(`[useJobTracker] Job completed with result:`, response.data.result)
           setIsPolling(false)
           onComplete?.(response.data.result)
         } else if (response.data.status === "failed") {
+          console.log(`[useJobTracker] Job failed:`, response.data.error)
           setIsPolling(false)
           const errorMsg = response.data.error || "Job failed"
           setError(errorMsg)
           onError?.(errorMsg)
         }
       } else {
+        console.error(`[useJobTracker] Failed to fetch job status:`, response.error)
         throw new Error(response.error || "Failed to fetch job status")
       }
     } catch (err) {

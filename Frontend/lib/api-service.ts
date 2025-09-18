@@ -36,6 +36,7 @@ export interface JobStatus {
   processingTime?: number;
   completedAt?: string;
   createdAt: string;
+  progress?: number;
 }
 
 export interface JobStatusResponse {

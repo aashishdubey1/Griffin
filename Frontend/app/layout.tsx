@@ -5,6 +5,7 @@ import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { ChatProvider } from "@/lib/chat-context"
 import { ThemeProvider } from "@/lib/theme-context"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,7 +48,10 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <AuthProvider>
-            <ChatProvider>{children}</ChatProvider>
+            <ChatProvider>
+              {children}
+              <Toaster />
+            </ChatProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

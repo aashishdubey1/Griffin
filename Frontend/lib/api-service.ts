@@ -1,6 +1,6 @@
 export interface LoginCredentials {
   email: string;
-  password: string;
+  password?: string; // Optional to support email-only login
 }
 
 export interface RegisterData {
@@ -11,13 +11,17 @@ export interface RegisterData {
 
 export interface AuthResponse {
   success: boolean;
-  token?: string;
   data: {
     user: {
       id: string;
       email: string;
+      username?: string;
       name?: string;
+      profile?: {
+        name?: string;
+      };
     };
+    token: string;
   };
   message?: string;
 }
@@ -89,7 +93,7 @@ class ApiService {
   constructor() {
     // Initialize token from localStorage if available
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("auth_token");
+      this.token = localStorage.getItem("authToken");
     }
   }
 
@@ -130,15 +134,37 @@ class ApiService {
 
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.makeRequest<AuthResponse>("/auth/login", {
+    // Support both email-only and email+password login
+    const loginData = credentials.password 
+      ? credentials 
+      : { email: credentials.email };
+    
+    const response = await this.makeRequest<AuthResponse>("/login", {
       method: "POST",
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(loginData),
     });
 
-    if (response.success && response.token) {
-      this.token = response.token;
+    if (response.success && response.data?.token) {
+      this.token = response.data.token;
       if (typeof window !== "undefined") {
-        localStorage.setItem("auth_token", response.token);
+        localStorage.setItem("authToken", response.data.token);
+      }
+    }
+
+    return response;
+  }
+
+  // Email-only login method as specified in requirements
+  async loginWithEmail(email: string): Promise<AuthResponse> {
+    const response = await this.makeRequest<AuthResponse>("/login", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    if (response.success && response.data?.token) {
+      this.token = response.data.token;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("authToken", response.data.token);
       }
     }
 
@@ -151,10 +177,10 @@ class ApiService {
       body: JSON.stringify(data),
     });
 
-    if (response.success && response.token) {
-      this.token = response.token;
+    if (response.success && response.data?.token) {
+      this.token = response.data.token;
       if (typeof window !== "undefined") {
-        localStorage.setItem("auth_token", response.token);
+        localStorage.setItem("authToken", response.data.token);
       }
     }
 
@@ -172,7 +198,7 @@ class ApiService {
 
     this.token = null;
     if (typeof window !== "undefined") {
-      localStorage.removeItem("auth_token");
+      localStorage.removeItem("authToken");
     }
 
     return { success: true };
@@ -201,20 +227,32 @@ class ApiService {
     return response.json();
   }
 
-  // Review submission methods
+  // Review submission methods - ensures token is always included
   async submitReview(data: ReviewSubmissionData): Promise<ReviewResponse> {
+    if (!this.token) {
+      throw new Error("Authentication required. Please login first.");
+    }
+    
     return this.makeRequest<ReviewResponse>("/review/submit", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  // Job status tracking methods
+  // Job status tracking methods - ensures token is always included
   async getJobStatus(jobId: string): Promise<JobStatusResponse> {
+    if (!this.token) {
+      throw new Error("Authentication required. Please login first.");
+    }
+    
     return this.makeRequest<JobStatusResponse>(`/review/jobs/${jobId}/status`);
   }
 
   async getJobStatusImmediate(jobId: string): Promise<JobStatusResponse> {
+    if (!this.token) {
+      throw new Error("Authentication required. Please login first.");
+    }
+    
     return this.makeRequest<JobStatusResponse>(
       `/review/jobs/${jobId}/status/immediate`
     );
@@ -232,7 +270,7 @@ class ApiService {
   setToken(token: string): void {
     this.token = token;
     if (typeof window !== "undefined") {
-      localStorage.setItem("auth_token", token);
+      localStorage.setItem("authToken", token);
     }
   }
 }

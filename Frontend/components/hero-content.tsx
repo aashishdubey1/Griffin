@@ -8,7 +8,15 @@ export const HeroContent = React.memo(function HeroContent() {
   const { isDarkMode } = useTheme()
 
   return (
-    <div className="pt-16 sm:pt-20 md:pt-24 lg:pt-[216px] pb-8 sm:pb-12 md:pb-16 flex flex-col justify-start items-center px-2 sm:px-4 md:px-8 lg:px-0 w-full sm:pl-0 sm:pr-0 pl-0 pr-0 relative">
+    <div
+      className="pt-16 sm:pt-20 md:pt-24 lg:pt-[216px] pb-8 sm:pb-12 md:pb-16 flex flex-col justify-start items-center px-2 sm:px-4 md:px-8 lg:px-0 w-full sm:pl-0 sm:pr-0 pl-0 pr-0 relative bg-center bg-cover bg-no-repeat bg-fixed"
+      style={{
+        backgroundImage: isDarkMode ? "url(/gradient-pattern.svg)" : "url(/mask-group-pattern.svg)",
+        backgroundPosition: "center center",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <div className="w-full max-w-[937px] lg:w-[937px] flex flex-col justify-center items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 relative z-10">
         <div className="self-stretch rounded-[3px] flex flex-col justify-center items-center gap-4 sm:gap-5 md:gap-6 lg:gap-8">
           <div
@@ -30,7 +38,7 @@ export const HeroContent = React.memo(function HeroContent() {
       </div>
 
       <div className="w-full max-w-[497px] lg:w-[497px] flex flex-col justify-center items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 relative z-10 mt-6 sm:mt-8 md:mt-10 lg:mt-12">
-        <div className="backdrop-blur-[8.25px] flex justify-start items-center gap-4">
+        <div className="backdrop-blur-[12px] bg-white/10 dark:bg-black/10 rounded-2xl p-4 flex justify-start items-center gap-4">
           <Link href="/login">
             <button
               className={`h-10 sm:h-11 md:h-12 px-6 sm:px-8 md:px-10 lg:px-12 py-2 sm:py-[6px] relative ${isDarkMode ? "bg-[#e5e5e5]" : "bg-[#37322F]"} ${isDarkMode ? "shadow-[0px_0px_0px_2.5px_rgba(0,0,0,0.08)_inset]" : "shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset]"} overflow-hidden rounded-full flex justify-center items-center transition-all duration-300 ${isDarkMode ? "hover:bg-[#f5f5f5]" : "hover:bg-[#2a2520]"} ${isDarkMode ? "hover:shadow-[0px_4px_20px_rgba(229,229,229,0.25)]" : "hover:shadow-[0px_4px_20px_rgba(55,50,47,0.25)]"} hover:scale-105 active:scale-95 focus:outline-none ${isDarkMode ? "focus:ring-2 focus:ring-[#e5e5e5] focus:ring-offset-2 focus:ring-offset-[#1a1a1a]" : "focus:ring-2 focus:ring-[#37322F] focus:ring-offset-2 focus:ring-offset-[#F7F5F3]"} group`}

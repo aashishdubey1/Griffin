@@ -6,46 +6,47 @@ import { Separator } from "@/components/ui/separator"
 import { useTheme } from "@/lib/theme-context"
 import type { CodeReviewResult } from "@/lib/api-service"
 
-// Icon components
 const ShieldIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+    />
   </svg>
 )
 
 const CheckCircleIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
   </svg>
 )
 
 const RefreshIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+    />
   </svg>
 )
 
 const AlertTriangleIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-  </svg>
-)
-
-const SpeedIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-)
-
-const BookOpenIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-)
-
-const ClipboardCheckIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+    />
   </svg>
 )
 
@@ -60,83 +61,184 @@ export function ReviewResults({ result }: ReviewResultsProps) {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "critical": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-      case "high": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-      case "medium": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-      case "low": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      case "warning": return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+      case "critical":
+        return isDarkMode
+          ? "bg-gradient-to-r from-red-950/60 to-red-900/40 text-red-200 border border-red-800/40 shadow-sm"
+          : "bg-gradient-to-r from-red-50 to-red-100/80 text-red-800 border border-red-300/60 shadow-sm"
+      case "high":
+        return isDarkMode
+          ? "bg-gradient-to-r from-orange-950/60 to-orange-900/40 text-orange-200 border border-orange-800/40 shadow-sm"
+          : "bg-gradient-to-r from-orange-50 to-orange-100/80 text-orange-800 border border-orange-300/60 shadow-sm"
+      case "medium":
+        return isDarkMode
+          ? "bg-gradient-to-r from-amber-950/60 to-amber-900/40 text-amber-200 border border-amber-800/40 shadow-sm"
+          : "bg-gradient-to-r from-amber-50 to-amber-100/80 text-amber-800 border border-amber-300/60 shadow-sm"
+      case "low":
+        return isDarkMode
+          ? "bg-gradient-to-r from-blue-950/60 to-blue-900/40 text-blue-200 border border-blue-800/40 shadow-sm"
+          : "bg-gradient-to-r from-blue-50 to-blue-100/80 text-blue-800 border border-blue-300/60 shadow-sm"
+      default:
+        return isDarkMode
+          ? "bg-gradient-to-r from-slate-800/60 to-slate-700/40 text-slate-200 border border-slate-600/40 shadow-sm"
+          : "bg-gradient-to-r from-slate-50 to-slate-100/80 text-slate-800 border border-slate-300/60 shadow-sm"
     }
   }
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case "high": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-      case "medium": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      case "low": return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+      case "high":
+        return isDarkMode
+          ? "bg-gradient-to-r from-emerald-950/60 to-emerald-900/40 text-emerald-200 border border-emerald-800/40 shadow-sm"
+          : "bg-gradient-to-r from-emerald-50 to-emerald-100/80 text-emerald-800 border border-emerald-300/60 shadow-sm"
+      case "medium":
+        return isDarkMode
+          ? "bg-gradient-to-r from-cyan-950/60 to-cyan-900/40 text-cyan-200 border border-cyan-800/40 shadow-sm"
+          : "bg-gradient-to-r from-cyan-50 to-cyan-100/80 text-cyan-800 border border-cyan-300/60 shadow-sm"
+      case "low":
+        return isDarkMode
+          ? "bg-gradient-to-r from-slate-800/60 to-slate-700/40 text-slate-200 border border-slate-600/40 shadow-sm"
+          : "bg-gradient-to-r from-slate-50 to-slate-100/80 text-slate-800 border border-slate-300/60 shadow-sm"
+      default:
+        return isDarkMode
+          ? "bg-gradient-to-r from-slate-800/60 to-slate-700/40 text-slate-200 border border-slate-600/40 shadow-sm"
+          : "bg-gradient-to-r from-slate-50 to-slate-100/80 text-slate-800 border border-slate-300/60 shadow-sm"
     }
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 dark:text-green-400"
-    if (score >= 60) return "text-yellow-600 dark:text-yellow-400"
-    return "text-red-600 dark:text-red-400"
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Summary - Always shown at the top */}
-      <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircleIcon className="w-5 h-5 text-green-500" />
-            Analysis Summary
+    <div className="space-y-8">
+      <Card
+        className={`${
+          isDarkMode
+            ? "bg-gradient-to-br from-[#2a2a2a]/95 to-[#1f1f1f]/90 border-[rgba(255,255,255,0.15)] shadow-[0px_8px_32px_rgba(0,0,0,0.4)]"
+            : "bg-gradient-to-br from-white to-[#F7F5F3]/80 border-[#E0DEDB]/60 shadow-[0px_8px_32px_rgba(50,45,43,0.08)]"
+        } transition-all duration-500 hover:shadow-[0px_12px_48px_rgba(0,0,0,0.12)] hover:scale-[1.01]`}
+      >
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-4">
+            <div
+              className={`p-3 rounded-xl ${isDarkMode ? "bg-emerald-900/30 shadow-inner" : "bg-emerald-100/80 shadow-sm"}`}
+            >
+              <CheckCircleIcon className={`w-6 h-6 ${isDarkMode ? "text-emerald-300" : "text-emerald-700"}`} />
+            </div>
+            <span
+              className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} font-semibold text-xl tracking-tight`}
+            >
+              Analysis Summary
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={`${isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"} leading-relaxed transition-colors duration-500`}>
+          <p
+            className={`${
+              isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"
+            } leading-relaxed text-base transition-colors duration-500 text-pretty`}
+          >
             {result.summary}
           </p>
         </CardContent>
       </Card>
 
-      {/* Security Vulnerabilities */}
       {result.vulnerabilities && result.vulnerabilities.length > 0 && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldIcon className="w-5 h-5 text-red-500" />
-              Security Vulnerabilities
-              <Badge variant="destructive">{result.vulnerabilities.length}</Badge>
+        <Card
+          className={`${
+            isDarkMode
+              ? "bg-gradient-to-br from-red-950/15 to-[#2a2a2a]/95 border-red-800/40 shadow-[0px_8px_32px_rgba(220,38,38,0.1)]"
+              : "bg-gradient-to-br from-red-50/60 to-white border-red-200/80 shadow-[0px_8px_32px_rgba(220,38,38,0.06)]"
+          } transition-all duration-500 hover:shadow-[0px_12px_48px_rgba(220,38,38,0.15)] hover:scale-[1.01]`}
+        >
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-4">
+              <div
+                className={`p-3 rounded-xl ${isDarkMode ? "bg-red-900/30 shadow-inner" : "bg-red-100/80 shadow-sm"}`}
+              >
+                <ShieldIcon className={`w-6 h-6 ${isDarkMode ? "text-red-300" : "text-red-700"}`} />
+              </div>
+              <span
+                className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} font-semibold text-xl tracking-tight`}
+              >
+                Security Vulnerabilities
+              </span>
+              <Badge
+                className={`${
+                  isDarkMode
+                    ? "bg-gradient-to-r from-red-900/60 to-red-800/40 text-red-200 border-red-700/50 shadow-sm"
+                    : "bg-gradient-to-r from-red-100 to-red-200/80 text-red-800 border-red-300/60 shadow-sm"
+                } font-medium px-3 py-1`}
+              >
+                {result.vulnerabilities.length}
+              </Badge>
             </CardTitle>
-            <CardDescription>Critical security issues that need immediate attention</CardDescription>
+            <CardDescription className={`${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} text-base`}>
+              Critical security issues that need immediate attention
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-8">
               {result.vulnerabilities.map((vuln, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangleIcon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <div key={index} className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className={`p-2 rounded-lg ${isDarkMode ? "bg-red-900/20" : "bg-red-100/60"}`}>
+                          <AlertTriangleIcon className={`w-5 h-5 ${isDarkMode ? "text-red-300" : "text-red-600"}`} />
+                        </div>
+                        <span
+                          className={`font-semibold text-lg ${
+                            isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"
+                          } transition-colors duration-500`}
+                        >
                           {vuln.type}
                         </span>
-                        <Badge className={getSeverityColor(vuln.severity)}>{vuln.severity}</Badge>
-                        {vuln.line && <Badge variant="outline">Line {vuln.line}</Badge>}
+                        <Badge className={`${getSeverityColor(vuln.severity)} px-3 py-1 font-medium`}>
+                          {vuln.severity}
+                        </Badge>
+                        {vuln.line && (
+                          <Badge
+                            className={`${
+                              isDarkMode
+                                ? "bg-[rgba(255,255,255,0.08)] text-[rgba(229,229,229,0.85)] border-[rgba(255,255,255,0.15)]"
+                                : "bg-[#F7F5F3] text-[#605A57] border-[#E0DEDB]/60"
+                            } px-3 py-1 shadow-sm`}
+                          >
+                            Line {vuln.line}
+                          </Badge>
+                        )}
                       </div>
-                      <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}>
+                      <p
+                        className={`text-base ${
+                          isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"
+                        } transition-colors duration-500 mb-4 leading-relaxed text-pretty`}
+                      >
                         {vuln.description}
                       </p>
                       {vuln.suggestion && (
-                        <div className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}>
-                          <strong className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Suggestion:</strong> {vuln.suggestion}
+                        <div
+                          className={`text-base p-5 rounded-xl ${
+                            isDarkMode
+                              ? "bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] shadow-inner"
+                              : "bg-[#F7F5F3]/80 border border-[#E0DEDB]/60 shadow-sm"
+                          } transition-colors duration-500`}
+                        >
+                          <strong
+                            className={`${
+                              isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"
+                            } transition-colors duration-500 text-base`}
+                          >
+                            💡 Suggestion:
+                          </strong>{" "}
+                          <span
+                            className={`${isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"} text-pretty`}
+                          >
+                            {vuln.suggestion}
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
-                  {index < result.vulnerabilities.length - 1 && <Separator />}
+                  {index < result.vulnerabilities.length - 1 && (
+                    <Separator className={`${isDarkMode ? "bg-[rgba(255,255,255,0.12)]" : "bg-[#E0DEDB]/60"} my-6`} />
+                  )}
                 </div>
               ))}
             </div>
@@ -144,53 +246,82 @@ export function ReviewResults({ result }: ReviewResultsProps) {
         </Card>
       )}
 
-      {/* Best Practices */}
       {result.bestPractices && result.bestPractices.length > 0 && (
         <Card
-          className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}
+          className={`${
+            isDarkMode
+              ? "bg-gradient-to-br from-blue-950/15 to-[#2a2a2a]/95 border-blue-800/40 shadow-[0px_8px_32px_rgba(59,130,246,0.1)]"
+              : "bg-gradient-to-br from-blue-50/60 to-white border-blue-200/80 shadow-[0px_8px_32px_rgba(59,130,246,0.06)]"
+          } transition-all duration-500 hover:shadow-[0px_12px_48px_rgba(59,130,246,0.15)] hover:scale-[1.01]`}
         >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircleIcon className="w-5 h-5 text-blue-500" />
-              Best Practices
-              <Badge variant="secondary">{result.bestPractices.length}</Badge>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-4">
+              <div
+                className={`p-3 rounded-xl ${isDarkMode ? "bg-blue-900/30 shadow-inner" : "bg-blue-100/80 shadow-sm"}`}
+              >
+                <CheckCircleIcon className={`w-6 h-6 ${isDarkMode ? "text-blue-300" : "text-blue-700"}`} />
+              </div>
+              <span
+                className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} font-semibold text-xl tracking-tight`}
+              >
+                Best Practices
+              </span>
+              <Badge
+                className={`${
+                  isDarkMode
+                    ? "bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-blue-200 border-blue-700/50 shadow-sm"
+                    : "bg-gradient-to-r from-blue-100 to-blue-200/80 text-blue-800 border-blue-300/60 shadow-sm"
+                } font-medium px-3 py-1`}
+              >
+                {result.bestPractices.length}
+              </Badge>
             </CardTitle>
-            <CardDescription>Recommendations to improve code quality and maintainability</CardDescription>
+            <CardDescription className={`${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} text-base`}>
+              Recommendations to improve code quality and maintainability
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-8">
               {result.bestPractices.map((practice, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <CheckCircleIcon className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div key={index} className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className={`p-2 rounded-lg mt-1 ${isDarkMode ? "bg-blue-900/20" : "bg-blue-100/60"}`}>
+                      <CheckCircleIcon className={`w-5 h-5 ${isDarkMode ? "text-blue-300" : "text-blue-600"}`} />
+                    </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-4 mb-3">
                         <span
-                          className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}
+                          className={`font-semibold text-lg ${
+                            isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"
+                          } transition-colors duration-500`}
                         >
                           {practice.category}
                         </span>
-                        <Badge className={getSeverityColor(practice.severity)}>{practice.severity}</Badge>
-                        {practice.lineNumber && <Badge variant="outline">Line {practice.lineNumber}</Badge>}
+                        {practice.lineNumber && (
+                          <Badge
+                            className={`${
+                              isDarkMode
+                                ? "bg-[rgba(255,255,255,0.08)] text-[rgba(229,229,229,0.85)] border-[rgba(255,255,255,0.15)]"
+                                : "bg-[#F7F5F3] text-[#605A57] border-[#E0DEDB]/60"
+                            } px-3 py-1 shadow-sm`}
+                          >
+                            Line {practice.lineNumber}
+                          </Badge>
+                        )}
                       </div>
                       <p
-                        className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}
+                        className={`text-base ${
+                          isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"
+                        } transition-colors duration-500 mb-4 leading-relaxed text-pretty`}
                       >
                         {practice.message}
                       </p>
-                      <div
-                        className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}
-                      >
-                        <strong
-                          className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}
-                        >
-                          Suggestion:
-                        </strong>{" "}
-                        {/* No suggestion property in best practices from the JSON */}
-                      </div>
+                      {/* Best practices don't have suggestions in the backend interface, so we'll skip the suggestion display for now */}
                     </div>
                   </div>
-                  {index < result.bestPractices.length - 1 && <Separator />}
+                  {index < result.bestPractices.length - 1 && (
+                    <Separator className={`${isDarkMode ? "bg-[rgba(255,255,255,0.12)]" : "bg-[#E0DEDB]/60"} my-6`} />
+                  )}
                 </div>
               ))}
             </div>
@@ -198,291 +329,110 @@ export function ReviewResults({ result }: ReviewResultsProps) {
         </Card>
       )}
 
-      {/* Refactoring Suggestions */}
       {result.refactoring && result.refactoring.length > 0 && (
         <Card
-          className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}
+          className={`${
+            isDarkMode
+              ? "bg-gradient-to-br from-emerald-950/15 to-[#2a2a2a]/95 border-emerald-800/40 shadow-[0px_8px_32px_rgba(16,185,129,0.1)]"
+              : "bg-gradient-to-br from-emerald-50/60 to-white border-emerald-200/80 shadow-[0px_8px_32px_rgba(16,185,129,0.06)]"
+          } transition-all duration-500 hover:shadow-[0px_12px_48px_rgba(16,185,129,0.15)] hover:scale-[1.01]`}
         >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <RefreshIcon className="w-5 h-5 text-green-500" />
-              Refactoring Opportunities
-              <Badge variant="secondary">{result.refactoring.length}</Badge>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-4">
+              <div
+                className={`p-3 rounded-xl ${isDarkMode ? "bg-emerald-900/30 shadow-inner" : "bg-emerald-100/80 shadow-sm"}`}
+              >
+                <RefreshIcon className={`w-6 h-6 ${isDarkMode ? "text-emerald-300" : "text-emerald-700"}`} />
+              </div>
+              <span
+                className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"} font-semibold text-xl tracking-tight`}
+              >
+                Refactoring Opportunities
+              </span>
+              <Badge
+                className={`${
+                  isDarkMode
+                    ? "bg-gradient-to-r from-emerald-900/60 to-emerald-800/40 text-emerald-200 border-emerald-700/50 shadow-sm"
+                    : "bg-gradient-to-r from-emerald-100 to-emerald-200/80 text-emerald-800 border-emerald-300/60 shadow-sm"
+                } font-medium px-3 py-1`}
+              >
+                {result.refactoring.length}
+              </Badge>
             </CardTitle>
-            <CardDescription>Suggestions to improve performance, readability, and architecture</CardDescription>
+            <CardDescription className={`${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} text-base`}>
+              Suggestions to improve performance, readability, and architecture
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-8">
               {result.refactoring.map((refactor, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <RefreshIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                <div key={index} className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className={`p-2 rounded-lg mt-1 ${isDarkMode ? "bg-emerald-900/20" : "bg-emerald-100/60"}`}>
+                      <RefreshIcon className={`w-5 h-5 ${isDarkMode ? "text-emerald-300" : "text-emerald-600"}`} />
+                    </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-4 mb-3">
                         <span
-                          className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}
+                          className={`font-semibold text-lg ${
+                            isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"
+                          } transition-colors duration-500`}
                         >
-                          Refactoring Suggestion
+                          Refactoring Opportunity
                         </span>
-                        <Badge className={getImpactColor(refactor.impact)}>{refactor.impact} impact</Badge>
-                        {refactor.lineNumber && <Badge variant="outline">Line {refactor.lineNumber}</Badge>}
+                        <Badge className={`${getImpactColor(refactor.impact)} px-3 py-1 font-medium`}>
+                          {refactor.impact} impact
+                        </Badge>
+                        {refactor.lineNumber && (
+                          <Badge
+                            className={`${
+                              isDarkMode
+                                ? "bg-[rgba(255,255,255,0.08)] text-[rgba(229,229,229,0.85)] border-[rgba(255,255,255,0.15)]"
+                                : "bg-[#F7F5F3] text-[#605A57] border-[#E0DEDB]/60"
+                            } px-3 py-1 shadow-sm`}
+                          >
+                            Line {refactor.lineNumber}
+                          </Badge>
+                        )}
                       </div>
                       <p
-                        className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}
+                        className={`text-base ${
+                          isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"
+                        } transition-colors duration-500 mb-4 leading-relaxed text-pretty`}
                       >
                         {refactor.suggestion}
                       </p>
                       <div
-                        className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}
+                        className={`text-base p-5 rounded-xl ${
+                          isDarkMode
+                            ? "bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] shadow-inner"
+                            : "bg-[#F7F5F3]/80 border border-[#E0DEDB]/60 shadow-sm"
+                        } transition-colors duration-500`}
                       >
                         <strong
-                          className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}
+                          className={`${
+                            isDarkMode ? "text-[#e5e5e5]" : "text-[#37322F]"
+                          } transition-colors duration-500 text-base`}
                         >
-                          Suggestion:
+                          💡 Suggestion:
                         </strong>{" "}
-                        {/* Suggestion is already displayed above as main content */}
-                      </div>
-                    </div>
-                  </div>
-                  {index < result.refactoring.length - 1 && <Separator />}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Performance Issues */}
-      {result.performance && result.performance.length > 0 && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SpeedIcon className="w-5 h-5 text-purple-500" />
-              Performance Issues
-              <Badge variant="secondary">{result.performance.length}</Badge>
-            </CardTitle>
-            <CardDescription>Performance bottlenecks and optimization opportunities</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {result.performance.map((perf, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <SpeedIcon className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>
-                          Performance Issue
+                        <span
+                          className={`${isDarkMode ? "text-[rgba(229,229,229,0.85)]" : "text-[#605A57]"} text-pretty`}
+                        >
+                          {refactor.suggestion}
                         </span>
-                        <Badge className={getImpactColor(perf.impact)}>{perf.impact} impact</Badge>
-                        {perf.lineNumber && <Badge variant="outline">Line {perf.lineNumber}</Badge>}
-                      </div>
-                      <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}>
-                        {perf.issue}
-                      </p>
-                      <div className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}>
-                        <strong className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Suggestion:</strong> {perf.suggestion}
                       </div>
                     </div>
                   </div>
-                  {index < result.performance.length - 1 && <Separator />}
+                  {index < result.refactoring.length - 1 && (
+                    <Separator className={`${isDarkMode ? "bg-[rgba(255,255,255,0.12)]" : "bg-[#E0DEDB]/60"} my-6`} />
+                  )}
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
-
-      {/* Maintainability */}
-      {result.maintainability && (result.maintainability.score || result.maintainability.issues.length > 0) && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpenIcon className="w-5 h-5 text-indigo-500" />
-              Maintainability
-              {result.maintainability.score && (
-                <Badge variant="outline" className={getScoreColor(result.maintainability.score)}>
-                  Score: {result.maintainability.score}/100
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Code maintainability analysis and recommendations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {result.maintainability.issues && result.maintainability.issues.length > 0 && (
-              <div className="space-y-4">
-                {result.maintainability.issues.map((issue, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <BookOpenIcon className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>
-                            {issue.category}
-                          </span>
-                          {issue.lineNumber && <Badge variant="outline">Line {issue.lineNumber}</Badge>}
-                        </div>
-                        <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}>
-                          {issue.description}
-                        </p>
-                        <div className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}>
-                          <strong className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Suggestion:</strong> {issue.suggestion}
-                        </div>
-                      </div>
-                    </div>
-                    {index < result.maintainability.issues.length - 1 && <Separator />}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Complexity Analysis */}
-      {result.complexity && (
-        result.complexity.cyclomaticComplexity ||
-        result.complexity.cognitiveComplexity ||
-        (result.complexity.suggestions && result.complexity.suggestions.length > 0)
-      ) && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangleIcon className="w-5 h-5 text-orange-500" />
-              Complexity Analysis
-            </CardTitle>
-            <CardDescription>Code complexity metrics and optimization suggestions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {(result.complexity.cyclomaticComplexity || result.complexity.cognitiveComplexity) && (
-                <div className="flex gap-4">
-                  {result.complexity.cyclomaticComplexity && (
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}>
-                        Cyclomatic Complexity:
-                      </span>
-                      <Badge variant="outline" className={getScoreColor(result.complexity.cyclomaticComplexity * 10)}>
-                        {result.complexity.cyclomaticComplexity}
-                      </Badge>
-                    </div>
-                  )}
-                  {result.complexity.cognitiveComplexity && (
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}>
-                        Cognitive Complexity:
-                      </span>
-                      <Badge variant="outline" className={getScoreColor(result.complexity.cognitiveComplexity * 10)}>
-                        {result.complexity.cognitiveComplexity}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              )}
-              {result.complexity.suggestions && result.complexity.suggestions.length > 0 && (
-                <div className="space-y-3">
-                  {result.complexity.suggestions.map((suggestion, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        <AlertTriangleIcon className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>
-                              Complexity Suggestion
-                            </span>
-                            {suggestion.lineNumber && <Badge variant="outline">Line {suggestion.lineNumber}</Badge>}
-                          </div>
-                          <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500 mb-2`}>
-                            {suggestion.description}
-                          </p>
-                          <div className={`text-sm p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}>
-                            <strong className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Suggestion:</strong> {suggestion.suggestion}
-                          </div>
-                        </div>
-                      </div>
-                      {index < result.complexity.suggestions.length - 1 && <Separator />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Documentation */}
-      {result.documentation && (result.documentation.coverageScore || result.documentation.suggestions.length > 0) && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpenIcon className="w-5 h-5 text-teal-500" />
-              Documentation
-              {result.documentation.coverageScore && (
-                <Badge variant="outline" className={getScoreColor(result.documentation.coverageScore)}>
-                  Coverage: {result.documentation.coverageScore}%
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Documentation coverage and improvement suggestions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {result.documentation.suggestions && result.documentation.suggestions.length > 0 && (
-              <div className="space-y-3">
-                {result.documentation.suggestions.map((suggestion, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <BookOpenIcon className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
-                    <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}>
-                      {suggestion}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Testing */}
-      {result.testing && (result.testing.recommendations.length > 0 || result.testing.coverageAnalysis) && (
-        <Card className={`${isDarkMode ? "bg-[#2a2a2a] border-[rgba(255,255,255,0.15)]" : "bg-white border-[#E0DEDB]"} transition-colors duration-500`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardCheckIcon className="w-5 h-5 text-emerald-500" />
-              Testing
-            </CardTitle>
-            <CardDescription>Test coverage analysis and recommendations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {result.testing.coverageAnalysis && (
-                <div className={`p-3 rounded-md ${isDarkMode ? "bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)]" : "bg-[#F7F5F3] border border-[#E0DEDB]"} transition-colors duration-500`}>
-                  <strong className={`${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Coverage Analysis:</strong>
-                  <p className={`text-sm mt-1 ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}>
-                    {result.testing.coverageAnalysis}
-                  </p>
-                </div>
-              )}
-              {result.testing.recommendations && result.testing.recommendations.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className={`font-medium ${isDarkMode ? "text-[#e5e5e5]" : "text-[#49423D]"} transition-colors duration-500`}>Recommendations:</h4>
-                  {result.testing.recommendations.map((recommendation, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <ClipboardCheckIcon className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <p className={`text-sm ${isDarkMode ? "text-[rgba(229,229,229,0.70)]" : "text-[#605A57]"} transition-colors duration-500`}>
-                        {recommendation}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
     </div>
   )
 }
-
-// Add the missing sections that are not in the current component
-// These would be added dynamically based on the backend response structure

@@ -135,11 +135,11 @@ class ApiService {
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     // Support both email-only and email+password login
-    const loginData = credentials.password 
-      ? credentials 
+    const loginData = credentials.password
+      ? credentials
       : { email: credentials.email };
-    
-    const response = await this.makeRequest<AuthResponse>("/login", {
+
+    const response = await this.makeRequest<AuthResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify(loginData),
     });
@@ -232,7 +232,7 @@ class ApiService {
     if (!this.token) {
       throw new Error("Authentication required. Please login first.");
     }
-    
+
     return this.makeRequest<ReviewResponse>("/review/submit", {
       method: "POST",
       body: JSON.stringify(data),
@@ -244,7 +244,7 @@ class ApiService {
     if (!this.token) {
       throw new Error("Authentication required. Please login first.");
     }
-    
+
     return this.makeRequest<JobStatusResponse>(`/review/jobs/${jobId}/status`);
   }
 
@@ -252,7 +252,7 @@ class ApiService {
     if (!this.token) {
       throw new Error("Authentication required. Please login first.");
     }
-    
+
     return this.makeRequest<JobStatusResponse>(
       `/review/jobs/${jobId}/status/immediate`
     );

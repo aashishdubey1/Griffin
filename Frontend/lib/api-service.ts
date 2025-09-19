@@ -56,33 +56,68 @@ export interface ReviewSubmissionData {
   filename?: string;
 }
 
-export interface ReviewResponse {
-  success: boolean;
-  jobId?: string;
-  result?: {
-    summary: string;
-    vulnerabilities: Array<{
-      type: string;
-      severity: "low" | "medium" | "high" | "critical";
-      description: string;
-      line?: number;
-      suggestion?: string;
-    }>;
-    bestPractices: Array<{
-      type: string;
+export interface CodeReviewResult {
+  summary: string;
+  bestPractices: Array<{
+    category: string;
+    message: string;
+    severity: "low" | "medium" | "high" | "critical" | "warning";
+    lineNumber?: number;
+  }>;
+  refactoring: Array<{
+    suggestion: string;
+    impact: "low" | "medium" | "high";
+    lineNumber?: number;
+    originalCode?: string;
+    suggestedCode?: string;
+  }>;
+  vulnerabilities: Array<{
+    type: string;
+    severity: "low" | "medium" | "high" | "critical";
+    description: string;
+    line?: number;
+    suggestion?: string;
+  }>;
+  performance: Array<{
+    issue: string;
+    impact: "low" | "medium" | "high";
+    suggestion: string;
+    lineNumber?: number;
+  }>;
+  maintainability: {
+    score: number;
+    issues: Array<{
+      category: string;
       description: string;
       line?: number;
       suggestion: string;
-    }>;
-    refactoring: Array<{
-      type: string;
-      description: string;
-      line?: number;
-      suggestion: string;
-      impact: "low" | "medium" | "high";
+      lineNumber?: number;
     }>;
   };
-  message?: string;
+  complexity: {
+    cyclomaticComplexity: number;
+    cognitiveComplexity: number;
+    suggestions: Array<{
+      description: string;
+      suggestion: string;
+      lineNumber?: number;
+    }>;
+  };
+  documentation: {
+    coverageScore: number;
+    suggestions: string[];
+  };
+  testing: {
+    recommendations: string[];
+    coverageAnalysis: string;
+  };
+}
+
+export interface ReviewResponse {
+  success: boolean;
+  message: string;
+  data: CodeReviewResult;
+  jobId?: string;
 }
 
 const API_BASE_URL = "http://localhost:4000/api";
@@ -99,7 +134,8 @@ class ApiService {
 
   private async makeRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    signal?: AbortSignal
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
@@ -120,6 +156,7 @@ class ApiService {
     const response = await fetch(url, {
       ...options,
       headers,
+      signal, // Add signal for request cancellation
     });
 
     if (!response.ok) {
@@ -228,15 +265,45 @@ class ApiService {
   }
 
   // Review submission methods - ensures token is always included
-  async submitReview(data: ReviewSubmissionData): Promise<ReviewResponse> {
+  async submitReview(data: ReviewSubmissionData, signal?: AbortSignal): Promise<ReviewResponse> {
     if (!this.token) {
       throw new Error("Authentication required. Please login first.");
     }
 
-    return this.makeRequest<ReviewResponse>("/review/submit", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    try {
+      return await this.makeRequest<ReviewResponse>("/review/submit", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }, signal);
+    } catch (error: any) {
+      if (signal?.aborted) {
+        throw new Error("Request was cancelled");
+      }
+      if (error.message.includes("Failed to fetch") || error.message.includes("fetch")) {
+        throw new Error("Cannot connect to backend server. Please ensure the backend is running on port 4000.");
+      }
+      throw error;
+    }
+  }
+
+  // Backend health check
+  async checkBackendHealth(): Promise<{ status: string; message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        return { status: "healthy", message: "Backend is running" };
+      } else {
+        return { status: "unhealthy", message: `Backend responded with status: ${response.status}` };
+      }
+    } catch (error: any) {
+      return { status: "unreachable", message: "Backend server is not reachable. Please start the backend server." };
+    }
   }
 
   // Job status tracking methods - ensures token is always included

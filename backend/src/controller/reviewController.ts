@@ -4,7 +4,11 @@ import { reviewSubmissionSchema } from "../validator/reviewValidator";
 import { ZodError } from "zod";
 import { upload } from "../config/multer.config";
 import { ReviewRepository } from "../repositories/reviewRepository";
+import { SemgrepService } from "../services/semgrepService";
+import { AIService } from "../services/aiService";
 
+const semgrepService = new SemgrepService();
+const aiService = new AIService();
 const reviewRepository = new ReviewRepository();
 
 export class ReviewController {
@@ -155,28 +159,66 @@ export class ReviewController {
       }
 
       // Create review job
-      const result = await this.reviewService.createJob(
-        userId,
-        guestId,
-        validatedData
+      // const result = await this.reviewService.createJob(
+      //   userId,
+      //   guestId,
+      //   validatedData
+      // );
+
+      const startTime = Date.now();
+      console.log(
+        `Processing CodeReview - Language: ${validatedData.language}`
       );
 
-      res.status(202).json({
-        success: true,
-        message: "Code submitted for review",
-        data: {
-          jobId: result.jobId,
-          status: result.status,
-          estimatedTime: result.estimatedTime,
-        },
-        warnings:
-          validation.warnings.length > 0 ? validation.warnings : undefined,
-      });
-    } catch (error) {
-      this.handleError(res, error);
+      try {
+        // Update status to processing
+
+        // Step 1: Run Semgrep analysis
+        console.log(`Running static analysis for`);
+
+        const semgrepFindings = await semgrepService.analyze(
+          validatedData.code,
+          validatedData.language!,
+          validatedData.filename
+        );
+
+        // Step 2: Run AI analysis
+        // console.log(`Running AI analysis for job ${jobData.jobId}`);
+
+        const aiData = await aiService.analyzeCode(
+          validatedData.code,
+          validatedData.language!,
+          validatedData.filename,
+          semgrepFindings
+        );
+
+        // Step 3: Save results
+        const processingTime = Date.now() - startTime;
+
+        // await reviewRepository.updateJobResult(
+        //   jobData.jobId,
+        //   aiData,
+        //   processingTime
+        // );
+
+        // console.log(
+        //   `CodeReviewJob ${jobData.jobId} completed successfully in ${processingTime}ms`
+        // );
+
+        res.status(202).json({
+          success: true,
+          message: "Code Reviewed ",
+          data: aiData,
+          warnings:
+            validation.warnings.length > 0 ? validation.warnings : undefined,
+        });
+      } catch (error) {
+        this.handleError(res, error);
+      }
+    } catch (err) {
+      this.handleError(res, err);
     }
   };
-
   // Submit file for review
   submitFile = async (req: Request, res: Response): Promise<void> => {
     try {

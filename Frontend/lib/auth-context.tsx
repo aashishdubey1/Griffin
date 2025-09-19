@@ -78,19 +78,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false;
     } catch (error) {
       console.error("Login error:", error);
-      // if (email === "demo@griffin.dev" && password === "demo") {
-      //   const mockUser: User = {
-      //     id: "demo-user-id",
-      //     username: "demo",
-      //     email: "demo@griffin.dev",
-      //     name: "Demo User",
-      //   };
-      //   setUser(mockUser);
-      //   localStorage.setItem("griffin-user", JSON.stringify(mockUser));
-      //   localStorage.setItem("auth_token", "demo-token");
-      //   apiService.setToken("demo-token");
-      //   return true;
-      // }
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simplified email-only login as specified in requirements
+  const loginWithEmail = async (email: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const response: AuthResponse = await apiService.loginWithEmail(email);
+
+      if (response.success) {
+        const newUser: User = {
+          id: response.data.user!.id,
+          username: response.data.user!.username || response.data.user!.email.split("@")[0],
+          email: response.data.user!.email,
+          name: response.data.user!.name || response.data.user!.profile?.name,
+        };
+        setUser(newUser);
+        localStorage.setItem("griffin-user", JSON.stringify(newUser));
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Email login error:", error);
       return false;
     } finally {
       setIsLoading(false);

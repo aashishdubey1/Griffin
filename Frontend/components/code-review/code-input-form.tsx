@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTheme } from "@/lib/theme-context"
 import apiService, { type ReviewSubmissionData } from "@/lib/api-service"
+import { useAuth } from "@/lib/auth-context"
+import { useToast } from "@/hooks/use-toast"
 
 const CodeIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,6 +61,8 @@ const languageOptions = [
 
 export function CodeInputForm({ onSubmit, isSubmitting = false }: CodeInputFormProps) {
   const { isDarkMode } = useTheme()
+  const { isAuthenticated } = useAuth()
+  const { toast } = useToast()
   const [code, setCode] = useState("")
   const [language, setLanguage] = useState("")
   const [filename, setFilename] = useState("")
@@ -66,6 +70,27 @@ export function CodeInputForm({ onSubmit, isSubmitting = false }: CodeInputFormP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!code.trim()) return
+
+    // Check authentication before submitting
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to submit code for review.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Verify token exists in localStorage
+    const token = localStorage.getItem("authToken")
+    if (!token) {
+      toast({
+        title: "Token Missing",
+        description: "Authentication token not found. Please login again.",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       const submissionData: ReviewSubmissionData = {

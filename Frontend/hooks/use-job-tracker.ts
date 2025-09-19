@@ -21,6 +21,16 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
   const fetchJobStatus = useCallback(async () => {
     if (!jobId) return
 
+    // Check authentication before making request
+    const token = localStorage.getItem("authToken")
+    if (!token) {
+      console.error("[useJobTracker] No authentication token found")
+      setError("Authentication required")
+      setIsPolling(false)
+      onError?.("Authentication required")
+      return
+    }
+
     setIsLoading(true)
     try {
       console.log(`[useJobTracker] Fetching status for job: ${jobId}`)
@@ -59,6 +69,16 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
 
   const fetchImmediateStatus = useCallback(async () => {
     if (!jobId) return
+
+    // Check authentication before making request
+    const token = localStorage.getItem("authToken")
+    if (!token) {
+      console.error("[useJobTracker] No authentication token found for immediate status")
+      setError("Authentication required")
+      setIsPolling(false)
+      onError?.("Authentication required")
+      return
+    }
 
     try {
       const response = await apiService.getJobStatusImmediate(jobId)

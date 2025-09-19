@@ -109,6 +109,7 @@ export default function ChatPage() {
   // Add request management
   const [currentRequest, setCurrentRequest] = useState<AbortController | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [stateResetTimeout, setStateResetTimeout] = useState<NodeJS.Timeout | null>(null)
 
   const addDebugLog = (type: DebugLog["type"], message: string, data?: any) => {
     const log: DebugLog = {
@@ -119,6 +120,20 @@ export default function ChatPage() {
       data,
     }
     setDebugLogs((prev) => [...prev, log].slice(-50)) // Keep only last 50 logs
+  }
+
+  // Safety mechanism to reset states after a timeout
+  const setSafetyTimeout = () => {
+    if (stateResetTimeout) {
+      clearTimeout(stateResetTimeout)
+    }
+    
+    const timeout = setTimeout(() => {
+      console.log("[RequestManager] Safety timeout triggered - resetting states")
+      resetStates()
+    }, 30000) // 30 seconds timeout
+    
+    setStateResetTimeout(timeout)
   }
 
   // Cancel any ongoing request
@@ -132,10 +147,17 @@ export default function ChatPage() {
 
   // Reset all loading states
   const resetStates = () => {
+    console.log("[RequestManager] Resetting all states")
     setIsLoading(false)
     setIsUploading(false)
     setIsProcessing(false)
     cancelCurrentRequest()
+    
+    // Clear any existing timeout
+    if (stateResetTimeout) {
+      clearTimeout(stateResetTimeout)
+      setStateResetTimeout(null)
+    }
   }
 
   const {
@@ -211,9 +233,27 @@ export default function ChatPage() {
     }
   }, [user, authLoading, router])
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cancelCurrentRequest()
+    }
+  }, [])
+
+  // Debug effect to monitor state changes
+  useEffect(() => {
+    console.log("[StateMonitor]", {
+      isLoading,
+      isUploading,
+      isProcessing,
+      hasCurrentRequest: !!currentRequest,
+      currentJobId
+    })
+  }, [isLoading, isUploading, isProcessing, currentRequest, currentJobId])
+
   const handleFileUpload = async (file: File) => {
     // Prevent multiple concurrent uploads
-    if (isUploading || isProcessing || currentRequest) {
+    if (isUploading || isProcessing) {
       console.log("[RequestManager] Upload blocked - request already in progress")
       return
     }
@@ -262,6 +302,12 @@ export default function ChatPage() {
         if (result.jobId) {
           setCurrentJobId(result.jobId)
           console.log(`[v0] Started tracking job: ${result.jobId}`)
+          // Reset processing state but keep loading for job tracking
+          setIsProcessing(false)
+          setCurrentRequest(null)
+        } else {
+          // No job tracking needed, reset all states
+          resetStates()
         }
       } else {
         throw new Error(result.message || "Upload failed")
@@ -291,7 +337,7 @@ export default function ChatPage() {
     if (!code.trim()) return
 
     // Prevent multiple concurrent submissions
-    if (isLoading || isProcessing || currentRequest) {
+    if (isLoading || isProcessing) {
       console.log("[RequestManager] Code submission blocked - request already in progress")
       return
     }
@@ -301,6 +347,7 @@ export default function ChatPage() {
     resetStates()
     setIsLoading(true)
     setIsProcessing(true)
+    setSafetyTimeout() // Set safety timeout
 
     // Create new abort controller for this request
     const abortController = new AbortController()
@@ -347,7 +394,9 @@ export default function ChatPage() {
         if (result.jobId) {
           setCurrentJobId(result.jobId)
           console.log(`[v0] Started tracking code review job: ${result.jobId}`)
-          // Don't reset loading states here - let job tracker handle completion
+          // Reset processing state but keep loading for job tracking
+          setIsProcessing(false)
+          setCurrentRequest(null)
         } else if (result.data) {
           // Handle immediate results
           const resultMessage: Message = {
@@ -359,6 +408,10 @@ export default function ChatPage() {
           }
           setMessages((prev) => [...prev, resultMessage])
           resetStates() // Reset here since no job tracking needed
+        } else {
+          // No jobId and no immediate data - something's wrong, reset states
+          console.warn("[RequestManager] No jobId or data in response, resetting states")
+          resetStates()
         }
       } else {
         throw new Error(result.message || "Submission failed")
@@ -386,7 +439,7 @@ export default function ChatPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim() || isLoading || isProcessing || currentRequest) {
+    if (!message.trim() || isLoading || isProcessing) {
       console.log("[RequestManager] Submit blocked - request already in progress or empty message")
       return
     }
@@ -465,6 +518,7 @@ export default function ChatPage() {
     if (looksLikeCode) {
       await handleCodeSubmission(message.trim())
       setMessage("")
+      // Don't set isLoading to false here - let handleCodeSubmission manage states
       return
     }
 
@@ -651,7 +705,7 @@ export default function ChatPage() {
                         size="sm"
                         variant="ghost"
                         onClick={handleFileButtonClick}
-                        disabled={isUploading}
+                        disabled={isUploading || isProcessing}
                         className={`h-8 w-8 p-0 flex-shrink-0 ${
                           isDarkMode
                             ? "hover:bg-[rgba(255,255,255,0.1)] text-[rgba(229,229,229,0.70)]"
@@ -708,13 +762,31 @@ export default function ChatPage() {
                         />
                       </div>
 
+                      {/* Debug button for development - remove in production */}
+                      {process.env.NODE_ENV === "development" && (isLoading || isProcessing) && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            console.log("[Debug] Manual state reset triggered")
+                            resetStates()
+                          }}
+                          className="h-8 px-2 text-xs"
+                          title="Reset states (debug)"
+                        >
+                          Reset
+                        </Button>
+                      )}
+
                       <Button
                         type="submit"
                         size="sm"
-                        disabled={!message.trim() || isLoading}
+                        disabled={!message.trim() || isLoading || isProcessing}
                         className="h-8 w-8 p-0 bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={!message.trim() ? "Enter a message" : (isLoading || isProcessing) ? "Processing..." : "Send message"}
                       >
-                        <SendIcon className="w-4 h-4" />
+                        {isLoading || isProcessing ? <LoaderIcon className="w-4 h-4" /> : <SendIcon className="w-4 h-4" />}
                       </Button>
                     </div>
                   </div>

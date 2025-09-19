@@ -176,11 +176,11 @@ export class ReviewController {
         // Step 1: Run Semgrep analysis
         console.log(`Running static analysis for`);
 
-        const semgrepFindings = await semgrepService.analyze(
-          validatedData.code,
-          validatedData.language!,
-          validatedData.filename
-        );
+        // const semgrepFindings = await semgrepService.analyze(
+        //   validatedData.code,
+        //   validatedData.language!,
+        //   validatedData.filename
+        // );
 
         // Step 2: Run AI analysis
         // console.log(`Running AI analysis for job ${jobData.jobId}`);
@@ -188,8 +188,7 @@ export class ReviewController {
         const aiData = await aiService.analyzeCode(
           validatedData.code,
           validatedData.language!,
-          validatedData.filename,
-          semgrepFindings
+          validatedData.filename
         );
 
         // Step 3: Save results

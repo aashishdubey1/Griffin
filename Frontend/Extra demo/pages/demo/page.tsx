@@ -1,6 +1,6 @@
 "use client"
 
-import { DemoJobFlow } from "@/components/demo-job-flow"
+import { DemoJobFlow } from "../../components/demo-job-flow"
 
 export default function DemoPage() {
   return (

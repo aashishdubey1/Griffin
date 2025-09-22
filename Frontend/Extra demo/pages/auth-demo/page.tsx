@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthFlowExample } from "@/components/auth-flow-example";
+import { AuthFlowExample } from "../../components/auth-flow-example";
 
 export default function AuthDemoPage() {
   return (

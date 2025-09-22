@@ -1,6 +1,6 @@
 "use client"
 
-import { TestJobFlow } from "@/components/test-job-flow"
+import { TestJobFlow } from "../../components/test-job-flow"
 
 export default function TestJobPage() {
   return (

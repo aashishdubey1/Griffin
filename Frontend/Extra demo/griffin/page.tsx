@@ -1,4 +1,4 @@
-import { GriffinInterface } from "@/components/griffin-interface"
+import { GriffinInterface } from "../components/griffin-interface"
 
 export default function GriffinPage() {
   return (

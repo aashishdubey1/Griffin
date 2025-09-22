@@ -5,6 +5,9 @@ This folder contains all demo, test, and debug components that were moved from t
 ## Structure
 
 ### `/components/`
+- **auth/** - Authentication components (login-form, register-form) moved from main app
+- **file-upload/** - File upload components (drag-drop-zone) moved from main app
+- **griffin-interface.tsx** - Legacy Griffin interface component used only in demos
 - **auth-test.tsx** - Complete authentication flow test component
 - **auth-flow-example.tsx** - Example component demonstrating authentication workflow
 - **debug-api.tsx** - API debugging tool for testing backend connections

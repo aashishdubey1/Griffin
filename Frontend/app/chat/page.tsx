@@ -167,7 +167,7 @@ export default function ChatPage() {
     error: jobError,
   } = useJobTracker(currentJobId, {
     onComplete: (result) => {
-      console.log("[v0] Job completed with result:", result)
+      console.log("Job completed with result:", result)
 
       // Reset states first to prevent duplicate processing
       resetStates()
@@ -184,7 +184,7 @@ export default function ChatPage() {
       setCurrentJobId(null)
     },
     onError: (error) => {
-      console.error("[v0] Job failed:", error)
+      console.error("Job failed:", error)
 
       // Reset states on error
       resetStates()
@@ -301,7 +301,7 @@ export default function ChatPage() {
 
         if (result.jobId) {
           setCurrentJobId(result.jobId)
-          console.log(`[v0] Started tracking job: ${result.jobId}`)
+          console.log(`Started tracking job: ${result.jobId}`)
           // Reset processing state but keep loading for job tracking
           setIsProcessing(false)
           setCurrentRequest(null)
@@ -393,7 +393,7 @@ export default function ChatPage() {
 
         if (result.jobId) {
           setCurrentJobId(result.jobId)
-          console.log(`[v0] Started tracking code review job: ${result.jobId}`)
+          console.log(`Started tracking code review job: ${result.jobId}`)
           // Reset processing state but keep loading for job tracking
           setIsProcessing(false)
           setCurrentRequest(null)
@@ -486,7 +486,7 @@ export default function ChatPage() {
           throw new Error(statusResult.error || "Failed to fetch job status")
         }
       } catch (error) {
-        console.error("[v0] Job status fetch error:", error)
+        console.error("Job status fetch error:", error)
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: "assistant",
@@ -602,11 +602,11 @@ export default function ChatPage() {
                       <JobTracker
                         jobId={currentJobId}
                         onComplete={(result) => {
-                          console.log("[v0] Job tracker completed:", result)
+                          console.log("Job tracker completed:", result)
                           addDebugLog("success", "Job completed successfully", result)
                         }}
                         onError={(error) => {
-                          console.error("[v0] Job tracker error:", error)
+                          console.error("Job tracker error:", error)
                           addDebugLog("error", "Job failed", error)
                         }}
                       />

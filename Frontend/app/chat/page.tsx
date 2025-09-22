@@ -12,7 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { JobTracker } from "@/components/job-status/job-tracker"
 import { ReviewResults } from "@/components/code-review/review-results"
 import { CodeMessage } from "@/components/chat/code-message"
-import { DebugPanel } from "@/components/chat/debug-panel"
 import { useJobTracker } from "@/hooks/use-job-tracker"
 import apiService, { type ReviewSubmissionData, type CodeReviewResult } from "@/lib/api-service"
 
@@ -613,11 +612,6 @@ export default function ChatPage() {
                     </div>
                   )}
 
-                  {/* {process.env.NODE_ENV === "development" && (
-                    <div className="px-2 sm:px-4">
-                      <DebugPanel logs={debugLogs} onClearLogs={() => setDebugLogs([])} />
-                    </div>
-                  )} */}
 
                   {messages.map((message) => (
                     <div key={message.id} className="group">

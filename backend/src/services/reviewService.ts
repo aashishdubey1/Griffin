@@ -9,8 +9,6 @@ import {
   estimateProcessingTime,
 } from "../utils/helper";
 import type { ReviewSubmissionInput } from "../validator/reviewValidator";
-import type { CodeReviewJobData } from "../jobs/codeReviewJob";
-import { addCodeReviewJob } from "../producers/codeReviewJobProducers";
 
 export class ReviewService {
   private reviewRepository: ReviewRepository;
@@ -49,7 +47,7 @@ export class ReviewService {
     const reviewJob = await this.reviewRepository.createJob(jobData);
 
     // Add job to queue
-    const queueJobData: CodeReviewJobData = {
+    const queueJobData = {
       jobId,
       code,
       language: detectedLanguage,
@@ -59,8 +57,6 @@ export class ReviewService {
       guestId,
       priority,
     };
-
-    await addCodeReviewJob(queueJobData, priority);
 
     // Estimate processing time
     const estimatedTime = estimateProcessingTime(code, detectedLanguage);

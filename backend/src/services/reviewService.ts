@@ -4,13 +4,7 @@ import {
   ReviewRepository,
   type CreateReviewJobData,
 } from "../repositories/reviewRepository";
-import {
-  detectLanguageFromFilename,
-  estimateProcessingTime,
-} from "../utils/helper";
 import type { ReviewSubmissionInput } from "../validator/reviewValidator";
-import type { CodeReviewJobData } from "../jobs/codeReviewJob";
-import { addCodeReviewJob } from "../producers/codeReviewJobProducers";
 
 export class ReviewService {
   private reviewRepository: ReviewRepository;
@@ -23,13 +17,11 @@ export class ReviewService {
     userId: string | undefined,
     guestId: string | undefined,
     submissionData: ReviewSubmissionInput
-  ): Promise<{ jobId: string; estimatedTime: number; status: string }> {
+  ): Promise<{ jobId: string; status: string }> {
     const jobId = uuidv4();
-    const { code, filename, language, priority = 5 } = submissionData;
+    const { code, filename } = submissionData;
 
     // Detect language if not provided
-    const detectedLanguage =
-      language || (filename ? detectLanguageFromFilename(filename) : "other");
 
     // Calculate file size
     const fileSize = Buffer.byteLength(code, "utf8");
@@ -41,33 +33,26 @@ export class ReviewService {
       guestId,
       code,
       filename,
-      language: detectedLanguage,
       fileSize,
-      priority,
     };
 
     const reviewJob = await this.reviewRepository.createJob(jobData);
 
     // Add job to queue
-    const queueJobData: CodeReviewJobData = {
+    const queueJobData = {
       jobId,
       code,
-      language: detectedLanguage,
       filename,
       fileSize,
       userId,
       guestId,
-      priority,
     };
 
-    await addCodeReviewJob(queueJobData, priority);
-
     // Estimate processing time
-    const estimatedTime = estimateProcessingTime(code, detectedLanguage);
+    // const estimatedTime = estimateProcessingTime(code, );
 
     return {
       jobId,
-      estimatedTime,
       status: "pending",
     };
   }

@@ -158,23 +158,13 @@ export class ReviewController {
         return;
       }
 
-      // Create review job
-      // const result = await this.reviewService.createJob(
-      //   userId,
-      //   guestId,
-      //   validatedData
-      // );
-
       const startTime = Date.now();
-      console.log(
-        `Processing CodeReview - Language: ${validatedData.language}`
-      );
+      console.log(`Processing CodeReview`);
 
       try {
         // Update status to processing
 
         // Step 1: Run Semgrep analysis
-        console.log(`Running static analysis for`);
 
         // const semgrepFindings = await semgrepService.analyze(
         //   validatedData.code,
@@ -187,22 +177,11 @@ export class ReviewController {
 
         const aiData = await aiService.analyzeCode(
           validatedData.code,
-          validatedData.language!,
           validatedData.filename
         );
 
         // Step 3: Save results
         const processingTime = Date.now() - startTime;
-
-        // await reviewRepository.updateJobResult(
-        //   jobData.jobId,
-        //   aiData,
-        //   processingTime
-        // );
-
-        // console.log(
-        //   `CodeReviewJob ${jobData.jobId} completed successfully in ${processingTime}ms`
-        // );
 
         res.status(202).json({
           success: true,
@@ -228,21 +207,19 @@ export class ReviewController {
         });
         return;
       }
+      console.log("file recived", req.file);
 
       // Convert file buffer to string
       const code = req.file.buffer.toString("utf8");
       const filename = req.file.originalname;
 
       // Parse additional data from body
-      const priority = req.body.priority ? parseInt(req.body.priority) : 5;
-      const language = req.body.language;
+      // const priority = req.body.priority ? parseInt(req.body.priority) : 5;
 
       // Validate using the same schema
       const submissionData = {
         code,
         filename,
-        language,
-        priority,
       };
 
       const validatedData = reviewSubmissionSchema.parse(submissionData);
@@ -250,7 +227,7 @@ export class ReviewController {
       // Get user/guest identification
       const userId = req.user?.userId;
       const guestId = !userId
-        ? req.ip || req.connection.remoteAddress || "unknown"
+        ? req.ip || req.socket.remoteAddress || "unknown"
         : undefined;
 
       // Validate code content
@@ -263,28 +240,43 @@ export class ReviewController {
         });
         return;
       }
+      const startTime = Date.now();
+      console.log(`Processing CodeReview`);
 
-      // Create review job
-      const result = await this.reviewService.createJob(
-        userId,
-        guestId,
-        validatedData
-      );
+      try {
+        // Update status to processing
 
-      res.status(202).json({
-        success: true,
-        message: "File submitted for review",
-        data: {
-          jobId: result.jobId,
-          status: result.status,
-          estimatedTime: result.estimatedTime,
-          filename,
-        },
-        warnings:
-          validation.warnings.length > 0 ? validation.warnings : undefined,
-      });
-    } catch (error) {
-      this.handleError(res, error);
+        // Step 1: Run Semgrep analysis
+
+        // const semgrepFindings = await semgrepService.analyze(
+        //   validatedData.code,
+        //   validatedData.language!,
+        //   validatedData.filename
+        // );
+
+        // Step 2: Run AI analysis
+        console.log(`Running AI analysis for job `);
+
+        const aiData = await aiService.analyzeCode(
+          validatedData.code,
+          validatedData.filename
+        );
+
+        // Step 3: Save results
+        const processingTime = Date.now() - startTime;
+
+        res.status(202).json({
+          success: true,
+          message: "Code Reviewed ",
+          data: aiData,
+          warnings:
+            validation.warnings.length > 0 ? validation.warnings : undefined,
+        });
+      } catch (error) {
+        this.handleError(res, error);
+      }
+    } catch (err) {
+      this.handleError(res, err);
     }
   };
 

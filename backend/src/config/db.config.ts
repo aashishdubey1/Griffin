@@ -15,12 +15,6 @@ export async function connectToDb() {
     connection.on("disconnected", () => {
       console.log("Mongodb Disconnected");
     });
-
-    process.on("SIGINT", async () => {
-      await connection.close();
-      console.log("Mongodb connection closed");
-      process.exit(0);
-    });
   } catch (error) {
     console.log("Failed to connect to mongodb", error);
     process.exit(1);

@@ -37,10 +37,6 @@ export const reviewSubmissionSchema = z.object({
         /\.(txt|js|ts|py|java|cs|cpp|c|go|rs|php|rb|kt|swift|dart|html|css|sql|sh|yml|yaml|json|xml)$/i;
       return validExtensions.test(filename) || filename.length > 0;
     }, "Invalid filename or extension"),
-
-  language: z.enum(SUPPORTED_LANGUAGES).optional(),
-
-  priority: z.number().min(1).max(10).optional().default(5),
 });
 
 // File upload schema

@@ -74,7 +74,6 @@ export class AIService {
    */
   async analyzeCode(
     code: string,
-    language: string,
     filename?: string,
     semgrepFindings?: SemgrepResult
   ): Promise<CodeReviewResult> {
@@ -87,12 +86,7 @@ export class AIService {
       // console.log("Ai service is get called ", code, language, filename);
 
       // Generate comprehensive prompt
-      const prompt = this.buildPrompt(
-        code,
-        language,
-        filename,
-        semgrepFindings
-      );
+      const prompt = this.buildPrompt(code, filename);
 
       // Call Gemini API with timeout
       const result = await Promise.race([
@@ -120,7 +114,6 @@ export class AIService {
    */
   private buildPrompt(
     code: string,
-    language: string,
     filename?: string,
     semgrepFindings?: SemgrepResult
   ): string {
@@ -203,14 +196,13 @@ OUTPUT SCHEMA:
     "coverageAnalysis": "Assessment of current testing approach"
   }
 }`;
-
-    let userPrompt = `**LANGUAGE:** ${language}\n`;
+    let userPrompt = "";
 
     if (filename) {
       userPrompt += `**FILENAME:** ${filename}\n`;
     }
 
-    userPrompt += `\n**CODE TO ANALYZE:**\n\`\`\`${language}\n${code}\n\`\`\`\n`;
+    userPrompt += `\n**CODE TO ANALYZE:**\n\`\`\`\n${code}\n\`\`\`\n`;
 
     // Include Semgrep findings if available
     if (semgrepFindings?.results?.length) {
@@ -230,8 +222,7 @@ OUTPUT SCHEMA:
       }
     }
 
-    userPrompt += `\n**INSTRUCTIONS:**
-Analyze the code thoroughly and integrate the static analysis findings. Provide comprehensive feedback covering all categories. Return only the JSON response.`;
+    userPrompt += `\n**INSTRUCTIONS:** Detect the programming language automatically from the provided code. Analyze the code thoroughly and integrate the static analysis findings. Provide comprehensive feedback covering all categories. Return only the JSON response.`;
 
     return systemPrompt + "\n\n" + userPrompt;
   }

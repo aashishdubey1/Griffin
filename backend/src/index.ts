@@ -1,4 +1,5 @@
 import express, {
+  NextFunction,
   urlencoded,
   type Express,
   type Request,
@@ -32,6 +33,10 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.use("/api", apiRoutes);
+
+app.get("/", (req: Request, res: Response, next: NextFunction) => {
+  res.status(200).send("ok");
+});
 
 app.listen(serverConfig.PORT, async () => {
   logger.info(`server is running on port ${serverConfig.PORT}`);

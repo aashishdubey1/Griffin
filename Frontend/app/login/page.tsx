@@ -165,7 +165,7 @@ export default function LoginPage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    email
+                    Email Address
                   </label>
                   <Input
                     id="email"
@@ -240,8 +240,24 @@ export default function LoginPage() {
                     "Sign In"
                   )}
                 </Button>
+                
+                {/* Forgot Password Link */}
+                <div className="text-center">
+                  <Link
+                    href="#"
+                    className="text-sm text-orange-500 hover:text-orange-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert("Forgot password feature coming soon!");
+                    }}
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
               </form>
 
+              {/* Commented out social login options as requested */}
+              {/*
               <div className="space-y-4 animate-in fade-in duration-700 delay-400">
                 <div className="grid grid-cols-3 gap-3">
                   <Button
@@ -311,6 +327,7 @@ export default function LoginPage() {
                   </Button>
                 </div>
               </div>
+              */}
 
               <div className="text-center animate-in fade-in duration-700 delay-500">
                 <p className="text-sm text-gray-600">

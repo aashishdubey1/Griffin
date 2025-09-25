@@ -120,7 +120,7 @@ export interface ReviewResponse {
   jobId?: string;
 }
 
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://griffin-7kap.onrender.com/api";
 
 class ApiService {
   private token: string | null = null;

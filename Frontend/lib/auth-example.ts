@@ -1,7 +1,7 @@
 // Example implementation of the secure authentication flow
 // This file demonstrates the exact pattern you requested
 
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://griffin-7kap.onrender.com/api";
 
 // Store token after login
 async function handleLogin(email: string, password: string) {

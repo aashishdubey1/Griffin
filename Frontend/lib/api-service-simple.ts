@@ -1,5 +1,5 @@
 // Simplified API service for testing without authentication
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://griffin-7kap.onrender.com/api";
 
 export interface ReviewSubmissionData {
   code: string;

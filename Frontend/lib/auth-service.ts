@@ -6,7 +6,7 @@
  * 3. Automatic token inclusion in all API requests
  */
 
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://griffin-7kap.onrender.com/api";
 
 interface LoginResponse {
   token: string;

@@ -278,14 +278,14 @@ export default function LandingPage() {
                       severity levels.
                     </p>
                   </div>
-                  <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex items-center justify-center overflow-hidden group/image cursor-pointer">
+                  {/* <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex items-center justify-center overflow-hidden group/image cursor-pointer">
                     <img
                       src="/griffin-hero-image.jpg"
                       alt="Griffin security vulnerability detection interface"
                       className="w-full h-full object-cover transition-all duration-500 group-hover/image:scale-110 group-hover/image:brightness-110 hover:shadow-lg"
                       loading="lazy"
                     />
-                  </div>
+                  </div> */}
                 </div>
                 <div
                   className={`${isDarkMode ? "border-b border-[rgba(255,255,255,0.15)]" : "border-b border-[rgba(55,50,47,0.12)]"} p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-start items-start gap-4 sm:gap-6 transition-colors duration-500`}
@@ -303,14 +303,14 @@ export default function LandingPage() {
                       code.
                     </p>
                   </div>
-                  <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden text-right items-center justify-center group/image cursor-pointer">
+                  {/* <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden text-right items-center justify-center group/image cursor-pointer">
                     <img
                       src="/griffin-hero-image.jpg"
                       alt="Griffin best practices and code standards review"
                       className="w-full h-full object-cover transition-all duration-500 group-hover/image:scale-110 group-hover/image:brightness-110 hover:shadow-lg"
                       loading="lazy"
                     />
-                  </div>
+                  </div> */}
                 </div>
                 <div
                   className={`border-r-0 ${isDarkMode ? "md:border-r border-[rgba(255,255,255,0.15)]" : "md:border-r border-[rgba(55,50,47,0.12)]"} p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-start items-start gap-4 sm:gap-6 bg-transparent transition-colors duration-500`}
@@ -328,7 +328,7 @@ export default function LandingPage() {
                       code.
                     </p>
                   </div>
-                  <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden justify-center items-center relative bg-transparent group/image cursor-pointer">
+                  {/* <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden justify-center items-center relative bg-transparent group/image cursor-pointer">
                     <img
                       src="/griffin-hero-image.jpg"
                       alt="Griffin refactoring suggestions and performance optimization"
@@ -338,7 +338,7 @@ export default function LandingPage() {
                     <div
                       className={`absolute bottom-0 left-0 right-0 h-8 ${isDarkMode ? "bg-gradient-to-t from-[#1a1a1a] to-transparent" : "bg-gradient-to-t from-[#F7F5F3] to-transparent"} pointer-events-none transition-colors duration-500`}
                     ></div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-start items-start gap-4 sm:gap-6">
                   <div className="flex flex-col gap-2">
@@ -354,7 +354,7 @@ export default function LandingPage() {
                       and Refactoring.
                     </p>
                   </div>
-                  <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden items-center justify-center relative group/image cursor-pointer">
+                  {/* <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden items-center justify-center relative group/image cursor-pointer">
                     <img
                       src="/griffin-hero-image.jpg"
                       alt="Griffin structured reporting and code analysis results"
@@ -364,13 +364,13 @@ export default function LandingPage() {
                     <div
                       className={`absolute bottom-0 left-0 right-0 h-8 ${isDarkMode ? "bg-gradient-to-t from-[#1a1a1a] to-transparent" : "bg-gradient-to-t from-[#F7F5F3] to-transparent"} pointer-events-none transition-colors duration-500`}
                     ></div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
 
             {/* Additional Sections */}
-            <DocumentationSection />
+            {/* <DocumentationSection /> */}
             <PricingSection />
             <FAQSection />
             <CTASection />

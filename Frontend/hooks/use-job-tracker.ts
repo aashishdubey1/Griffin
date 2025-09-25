@@ -17,6 +17,7 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
   const [isPolling, setIsPolling] = useState(autoStart && !!jobId)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [hasCompleted, setHasCompleted] = useState(false) // Prevent duplicate completion calls
 
   const fetchJobStatus = useCallback(async () => {
     if (!jobId) return
@@ -44,13 +45,19 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
         if (response.data.status === "completed") {
           console.log(`[useJobTracker] Job completed with result:`, response.data.result)
           setIsPolling(false)
-          onComplete?.(response.data.result)
+          if (!hasCompleted) {
+            setHasCompleted(true)
+            onComplete?.(response.data.result)
+          }
         } else if (response.data.status === "failed") {
           console.log(`[useJobTracker] Job failed:`, response.data.error)
           setIsPolling(false)
           const errorMsg = response.data.error || "Job failed"
           setError(errorMsg)
-          onError?.(errorMsg)
+          if (!hasCompleted) {
+            setHasCompleted(true)
+            onError?.(errorMsg)
+          }
         }
       } else {
         console.error(`[useJobTracker] Failed to fetch job status:`, response.error)
@@ -89,12 +96,18 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
 
         if (response.data.status === "completed") {
           setIsPolling(false)
-          onComplete?.(response.data.result)
+          if (!hasCompleted) {
+            setHasCompleted(true)
+            onComplete?.(response.data.result)
+          }
         } else if (response.data.status === "failed") {
           setIsPolling(false)
           const errorMsg = response.data.error || "Job failed"
           setError(errorMsg)
-          onError?.(errorMsg)
+          if (!hasCompleted) {
+            setHasCompleted(true)
+            onError?.(errorMsg)
+          }
         }
       } else {
         throw new Error(response.error || "Failed to fetch job status")
@@ -142,9 +155,11 @@ export function useJobTracker(jobId: string | null, options: UseJobTrackerOption
     if (jobId) {
       setJobStatus(null)
       setError(null)
+      setHasCompleted(false) // Reset completion flag
       setIsPolling(autoStart)
     } else {
       setIsPolling(false)
+      setHasCompleted(false)
     }
   }, [jobId, autoStart])
 

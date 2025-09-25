@@ -17,7 +17,6 @@ export class AuthController {
     this.authService = new AuthService();
   }
 
-  // User Registration
   register = async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = registerSchema.parse(req.body);
@@ -34,7 +33,6 @@ export class AuthController {
     }
   };
 
-  // User Login
   login = async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = loginSchema.parse(req.body);
@@ -149,22 +147,22 @@ export class AuthController {
   // };
 
   // // Forgot Password
-  // forgotPassword = async (req: Request, res: Response): Promise<void> => {
-  //   try {
-  //     const validatedData = forgotPasswordSchema.parse(req.body);
+  forgotPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const validatedData = forgotPasswordSchema.parse(req.body);
 
-  //     const resetToken = await this.authService.forgotPassword(validatedData);
+      const resetToken = await this.authService.forgotPassword(validatedData);
 
-  //     // In production, send this token via email instead of returning it
-  //     res.status(200).json({
-  //       success: true,
-  //       message: "Password reset token generated successfully",
-  //       resetToken, // Remove this in production
-  //     });
-  //   } catch (error) {
-  //     this.handleError(res, error);
-  //   }
-  // };
+      // In production, send this token via email instead of returning it
+      res.status(200).json({
+        success: true,
+        message: "Password reset token generated successfully",
+        resetToken, // Remove this in production
+      });
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  };
 
   // // Reset Password
   // resetPassword = async (req: Request, res: Response): Promise<void> => {

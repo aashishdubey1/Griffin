@@ -35,9 +35,8 @@ app.use("/api", apiRoutes);
 
 app.listen(serverConfig.PORT, async () => {
   logger.info(`server is running on port ${serverConfig.PORT}`);
-
-  // worker("code-review");
 });
+
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
   await mongoose.connection.close();

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useTheme } from "@/lib/theme-context"
@@ -105,6 +105,9 @@ export default function ChatPage() {
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
   
+  // Add scroll reference for auto-scroll functionality
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
   // Add request management
   const [currentRequest, setCurrentRequest] = useState<AbortController | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -120,6 +123,25 @@ export default function ChatPage() {
     }
     setDebugLogs((prev) => [...prev, log].slice(-50)) // Keep only last 50 logs
   }
+
+  // Auto-scroll to bottom function
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      })
+    }
+  }
+
+  // Auto-scroll when messages change or loading state changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToBottom()
+    }, 100) // Small delay to ensure DOM has updated
+    
+    return () => clearTimeout(timer)
+  }, [messages, isLoading])
 
   // Safety mechanism to reset states after a timeout
   const setSafetyTimeout = () => {
@@ -719,6 +741,9 @@ Just paste your code or upload a file to get started!`
       }
       setMessages((prev) => [...prev, assistantMessage])
       setIsLoading(false)
+      
+      // Ensure scroll after message is added
+      setTimeout(scrollToBottom, 150)
     }, 800) // Small delay to make it feel more natural
   }
 
@@ -762,7 +787,7 @@ Just paste your code or upload a file to get started!`
       <div className="flex h-[calc(100vh-84px)]">
         <div className="flex-1 w-full max-w-none px-4 sm:px-6 md:px-8 lg:px-0 lg:max-w-[1060px] lg:w-[1060px] mx-auto relative">
           <div className="h-full relative z-10 flex flex-col">
-            <ScrollArea className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500">
+            <ScrollArea ref={scrollAreaRef} className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500">
               <div className="max-w-3xl mx-auto px-4">
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center">
@@ -866,6 +891,9 @@ Just paste your code or upload a file to get started!`
                       </div>
                     </div>
                   )}
+                  
+                  {/* Invisible div for auto-scroll target */}
+                  <div ref={messagesEndRef} className="h-1" />
                 </div>
               </div>
             </ScrollArea>

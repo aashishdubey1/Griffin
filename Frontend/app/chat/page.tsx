@@ -246,7 +246,9 @@ export default function ChatPage() {
       isUploading,
       isProcessing,
       hasCurrentRequest: !!currentRequest,
-      currentJobId
+      currentJobId,
+      isAuthenticated: apiService.isAuthenticated(),
+      token: apiService.getToken() ? "Present" : "Missing"
     })
   }, [isLoading, isUploading, isProcessing, currentRequest, currentJobId])
 
@@ -268,15 +270,22 @@ export default function ChatPage() {
     setCurrentRequest(abortController)
 
     try {
-      console.log("[RequestManager] Starting file upload:", file.name)
+      console.log("[RequestManager] Starting file upload:", file.name, "Size:", file.size)
       
-      const result = await apiService.uploadFile(file)
+      // Check if user is authenticated
+      if (!apiService.isAuthenticated()) {
+        throw new Error("Please login to upload files")
+      }
+      
+      const result = await apiService.uploadFile(file, abortController.signal)
 
       // Check if request was aborted
       if (abortController.signal.aborted) {
         console.log("[RequestManager] File upload was cancelled")
         return
       }
+
+      console.log("[RequestManager] Upload result:", result)
 
       if (result.success) {
         const userMessage: Message = {
@@ -287,25 +296,63 @@ export default function ChatPage() {
         }
         setMessages((prev) => [...prev, userMessage])
 
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: "assistant",
-          content: result.jobId
-            ? `I've received your file "${file.name}" and started analyzing it. You can track the progress below.`
-            : "I've received your file and the analysis is complete!",
-          timestamp: new Date(),
-          jobId: result.jobId,
-        }
-        setMessages((prev) => [...prev, assistantMessage])
-
+        // Check what type of response we got
         if (result.jobId) {
+          // Job-based processing
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: "assistant",
+            content: `I've received your file "${file.name}" and started analyzing it. You can track the progress below.`,
+            timestamp: new Date(),
+            jobId: result.jobId,
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+
           setCurrentJobId(result.jobId)
-          console.log(`Started tracking job: ${result.jobId}`)
+          console.log(`[RequestManager] Started tracking job: ${result.jobId}`)
           // Reset processing state but keep loading for job tracking
           setIsProcessing(false)
           setCurrentRequest(null)
+        } else if (result.data) {
+          // Immediate results available
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: "assistant",
+            content: "I've received your file and completed the analysis!",
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+
+          // Add the actual results
+          const resultMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            type: "assistant",
+            content: "Here are your file analysis results:",
+            timestamp: new Date(),
+            reviewResult: result.data,
+          }
+          setMessages((prev) => [...prev, resultMessage])
+          resetStates()
         } else {
-          // No job tracking needed, reset all states
+          // No jobId and no immediate data - this indicates a problem
+          console.warn("[RequestManager] Upload successful but no jobId or data in response:", result)
+          
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: "assistant",
+            content: `I've received your file "${file.name}" but the backend didn't provide a job ID or immediate results. This might be a backend configuration issue.`,
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+          
+          // Try to create a follow-up message suggesting next steps
+          const suggestionMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            type: "assistant",
+            content: "You can try uploading the file again, or contact support if this issue persists. The file was received by the server but processing information wasn't returned.",
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, suggestionMessage])
           resetStates()
         }
       } else {
@@ -317,8 +364,17 @@ export default function ChatPage() {
         return
       }
       
-      console.error("File upload error:", error)
+      console.error("[RequestManager] File upload error:", error)
       const errorMessage = error instanceof Error ? error.message : "Failed to upload file. Please try again."
+
+      // Add user message for the file that failed
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        type: "user",
+        content: `Attempted to upload file: ${file.name}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, userMessage])
 
       const errorAssistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -499,28 +555,87 @@ export default function ChatPage() {
       return
     }
 
+    // Improved code detection patterns - more precise
     const codePatterns = [
-      /function\s+\w+\s*\(/,
-      /class\s+\w+/,
-      /import\s+.+from/,
-      /def\s+\w+\s*\(/,
-      /public\s+class/,
-      /const\s+\w+\s*=/,
-      /let\s+\w+\s*=/,
-      /var\s+\w+\s*=/,
-      /{[\s\S]*}/,
-      /\w+\s*$$[^)]*$$\s*{/,
+      // Function declarations
+      /function\s+\w+\s*\([^)]*\)\s*\{/,
+      /\w+\s*\([^)]*\)\s*=>\s*\{/,
+      /def\s+\w+\s*\([^)]*\):/,
+      
+      // Class declarations
+      /class\s+\w+[\s\S]*\{/,
+      /public\s+class\s+\w+/,
+      
+      // Import/require statements
+      /import\s+.+\s+from\s+['"].+['"]/,
+      /require\s*\(['"].+['"]\)/,
+      
+      // Variable declarations with assignment
+      /(const|let|var)\s+\w+\s*=\s*.+/,
+      
+      // Control structures
+      /(if|for|while|switch)\s*\([^)]+\)\s*\{/,
+      
+      // Method calls with multiple chained operations
+      /\w+\.\w+\([^)]*\)\.\w+/,
+      
+      // Complete code blocks
+      /\{[\s\S]*\n[\s\S]*\}/,
     ]
 
-    const looksLikeCode = codePatterns.some((pattern) => pattern.test(message.trim())) && message.trim().length > 50
+    // Additional checks to avoid false positives
+    const isLikelyCode = (text: string): boolean => {
+      const trimmed = text.trim()
+      
+      // Exclude simple print statements and basic expressions
+      const simpleExpressions = [
+        /^print\s*["'][^"']*["']$/i,
+        /^console\.log\s*\(["'][^"']*["']\)$/i,
+        /^echo\s+["'][^"']*["']$/i,
+        /^\w+\s*=\s*["'][^"']*["']$/,
+        /^["'][^"']*["']$/,
+      ]
+      
+      if (simpleExpressions.some(expr => expr.test(trimmed))) {
+        return false
+      }
+      
+      // Must be at least 30 characters for more reliable detection
+      if (trimmed.length < 30) {
+        return false
+      }
+      
+      // Check for code patterns
+      const hasCodePattern = codePatterns.some((pattern) => pattern.test(trimmed))
+      
+      // Additional heuristics for code detection
+      const codeIndicators = [
+        // Multiple lines with indentation
+        /\n\s{2,}/,
+        // Semicolons at end of lines
+        /;\s*\n/,
+        // Curly braces on separate lines
+        /\{\s*\n[\s\S]*\n\s*\}/,
+        // Multiple operators
+        /[=+\-*/<>!&|]{2,}/,
+        // Function calls with parameters
+        /\w+\([^)]*,\s*[^)]*\)/,
+      ]
+      
+      const hasCodeIndicators = codeIndicators.some((indicator) => indicator.test(trimmed))
+      
+      return hasCodePattern && (hasCodeIndicators || trimmed.length > 100)
+    }
 
-    if (looksLikeCode) {
+    if (isLikelyCode(message.trim())) {
+      console.log("[ChatLogic] Detected as code:", message.trim().substring(0, 50) + "...")
       await handleCodeSubmission(message.trim())
       setMessage("")
       // Don't set isLoading to false here - let handleCodeSubmission manage states
       return
     }
 
+    // If not code, handle as regular chat message
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
@@ -530,7 +645,81 @@ export default function ChatPage() {
 
     setMessages((prev) => [...prev, userMessage])
     setMessage("")
-    setIsLoading(false)
+    
+    // Generate appropriate response for regular messages
+    const generateChatResponse = (userInput: string): string => {
+      const input = userInput.toLowerCase().trim()
+      
+      // Handle simple code examples as learning attempts
+      if (/^print\s*["'][^"']*["']$/i.test(input) || /^console\.log\s*\(["'][^"']*["']\)$/i.test(input)) {
+        return `I see you're trying out a simple ${input.startsWith('print') ? 'print' : 'console.log'} statement! That's great for learning.
+
+If you'd like me to review some actual code, try pasting:
+- A complete function or class
+- Multiple lines of code
+- A code file with real logic
+
+I can help analyze things like security, performance, best practices, and more when you share substantial code!`
+      }
+      
+      // Greetings
+      if (/^(hi|hello|hey|hiya|sup|yo)\b/i.test(input)) {
+        return `Hello! I'm Griffin, your AI code review assistant. I can help you with:\n\n- **Code Review**: Paste your code and I'll analyze it for best practices, security issues, and improvements\n- **File Analysis**: Upload code files (.js, .py, .java, .cpp, etc.) for detailed review\n- **Security Scanning**: Find vulnerabilities and security issues in your code\n- **Performance Tips**: Get suggestions for optimizing your code\n\nTry pasting some code or uploading a file to get started!`
+      }
+      
+      // Simple responses
+      if (/how are you|what's up|how's it going/i.test(input)) {
+        return "I'm doing great! Ready to help you review some code. What would you like me to analyze today?"
+      }
+      
+      // Help requests
+      if (/help|what can you do|capabilities|features/i.test(input)) {
+        return `I'm Griffin, your AI-powered code review assistant! Here's what I can help you with:
+
+🔍 **Code Analysis**
+- Security vulnerability scanning
+- Best practices review
+- Performance optimization suggestions
+- Code complexity analysis
+
+📁 **File Support**
+- Upload files: .js, .ts, .py, .java, .cpp, .c, .cs, .go, .rs, .php, .rb, .swift
+- Paste code directly in the chat
+- Get detailed analysis reports
+
+🛡️ **Security Focus**
+- OWASP compliance checking
+- Vulnerability detection
+- Secure coding recommendations
+
+Just paste your code or upload a file to get started!`
+      }
+      
+      // Thanks
+      if (/thank you|thanks|thx/i.test(input)) {
+        return "You're welcome! Feel free to share any code you'd like me to review."
+      }
+      
+      // Code-related questions without actual code
+      if (/code|review|analyze|check|security|vulnerability|bug|error|function|class|variable/i.test(input)) {
+        return "I'd be happy to help with code-related questions! To provide the best analysis, please:\n\n- **Paste your code** directly in the chat, or\n- **Upload a code file** using the 📎 button\n\nI can review code in JavaScript, Python, Java, C++, TypeScript, and many other languages. What would you like me to analyze?"
+      }
+      
+      // Default response for other messages
+      return `I'm Griffin, a specialized code review assistant. While I'd love to chat about everything, I'm most helpful when analyzing code!\n\n**To get started:**\n- Paste some code you'd like me to review\n- Upload a code file (.js, .py, .java, etc.)\n- Ask about code security, best practices, or optimization\n\nWhat code would you like me to help you with today?`
+    }
+    
+    // Add assistant response after a short delay to make it feel natural
+    setTimeout(() => {
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: generateChatResponse(userMessage.content),
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+      setIsLoading(false)
+    }, 800) // Small delay to make it feel more natural
   }
 
   const handleFileButtonClick = () => {

@@ -30,6 +30,7 @@ export interface FileUploadResponse {
   success: boolean;
   jobId?: string;
   message?: string;
+  data?: any; // For immediate analysis results
 }
 
 export interface JobStatus {
@@ -242,26 +243,60 @@ class ApiService {
   }
 
   // File upload methods
-  async uploadFile(file: File): Promise<FileUploadResponse> {
+  async uploadFile(file: File, signal?: AbortSignal): Promise<FileUploadResponse> {
+    console.log("[ApiService] Starting file upload:", file.name, "Size:", file.size);
+    
+    if (!this.token) {
+      throw new Error("Authentication required. Please login first.");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/review/submit-file`, {
-      method: "POST",
-      headers: {
-        ...(this.token && { Authorization: `Bearer ${this.token}` }),
-      },
-      body: formData,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/review/submit-file`, {
+        method: "POST",
+        headers: {
+          ...(this.token && { Authorization: `Bearer ${this.token}` }),
+        },
+        body: formData,
+        signal, // Add abort signal support
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      console.log("[ApiService] Upload response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("[ApiService] Upload failed:", response.status, errorData);
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("[ApiService] Upload successful - FULL RESPONSE:", JSON.stringify(result, null, 2));
+      console.log("[ApiService] Response properties:", {
+        success: result.success,
+        jobId: result.jobId,
+        message: result.message,
+        data: result.data,
+        hasJobId: !!result.jobId,
+        hasData: !!result.data,
+        allKeys: Object.keys(result)
+      });
+      return result;
+    } catch (error: any) {
+      if (signal?.aborted) {
+        console.log("[ApiService] Upload request was cancelled");
+        throw new Error("Upload was cancelled");
+      }
+      if (error.message.includes("Failed to fetch") || error.message.includes("fetch")) {
+        console.error("[ApiService] Network error during upload:", error);
+        throw new Error("Cannot connect to backend server. Please ensure the backend is running.");
+      }
+      console.error("[ApiService] Upload error:", error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // Review submission methods - ensures token is always included
